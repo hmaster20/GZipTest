@@ -1,6 +1,0 @@
-X:\Repo\GZipTest\ReaderWriterLockTest\bin\Debug\ReaderWriterLockTest.exe.config
-X:\Repo\GZipTest\ReaderWriterLockTest\bin\Debug\ReaderWriterLockTest.exe
-X:\Repo\GZipTest\ReaderWriterLockTest\bin\Debug\ReaderWriterLockTest.pdb
-X:\Repo\GZipTest\ReaderWriterLockTest\obj\Debug\ReaderWriterLockTest.csprojResolveAssemblyReference.cache
-X:\Repo\GZipTest\ReaderWriterLockTest\obj\Debug\ReaderWriterLockTest.exe
-X:\Repo\GZipTest\ReaderWriterLockTest\obj\Debug\ReaderWriterLockTest.pdb
