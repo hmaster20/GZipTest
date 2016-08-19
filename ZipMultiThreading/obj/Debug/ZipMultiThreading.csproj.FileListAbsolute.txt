@@ -1,0 +1,6 @@
+X:\Repo\GZipTest\ZipMultiThreading\bin\Debug\ZipMultiThreading.exe.config
+X:\Repo\GZipTest\ZipMultiThreading\bin\Debug\ZipMultiThreading.exe
+X:\Repo\GZipTest\ZipMultiThreading\bin\Debug\ZipMultiThreading.pdb
+X:\Repo\GZipTest\ZipMultiThreading\obj\Debug\ZipMultiThreading.csprojResolveAssemblyReference.cache
+X:\Repo\GZipTest\ZipMultiThreading\obj\Debug\ZipMultiThreading.exe
+X:\Repo\GZipTest\ZipMultiThreading\obj\Debug\ZipMultiThreading.pdb
