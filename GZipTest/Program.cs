@@ -2,63 +2,79 @@
 using System.IO.Compression;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.IO;
 
-namespace GZipTest // GzipStream
+// ReaderWriterLock 
+
+namespace GZipTest 
 {
     class Program
     {
         public static void Main(string[] args)
         {
-            switch (args[0])
+            if (args.Length > 0)
             {
-                case "compress": Console.WriteLine("compress");break;
-                case "decompress": Console.WriteLine("decompress"); break;
-                default: break;
-            }
-
-            // foreach (string l in File.ReadLines(path, Encoding.GetEncoding(1251))) 
-            // http://www.cyberforum.ru/csharp-beginners/thread757831.html
-
-
-            ConsoleKeyInfo cki;
-
-            Console.Clear();
-
-            // Establish an event handler to process key press events.
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
-            while (true)
-            {
-                Console.Write("Press any key, or 'X' to quit, or ");
-                Console.WriteLine("CTRL+C to interrupt the read operation:");
-
-                // Start a console read operation. Do not display the input.
-                cki = Console.ReadKey(true);
-
-                // Announce the name of the key that was pressed .
-                Console.WriteLine("  Key pressed: {0}\n", cki.Key);
-
-                // Exit if the user pressed the 'X' key.
-                if (cki.Key == ConsoleKey.X) break;
+                switch (args[0])
+                {
+                    case "compress": Console.WriteLine("compress"); break;
+                    case "decompress": Console.WriteLine("decompress"); break;
+                    default: break;
+                }
             }
         }
 
-        protected static void myHandler(object sender, ConsoleCancelEventArgs args)
+
+        static void Reader(string SourceFile)
         {
-            Console.WriteLine("\nThe read operation has been interrupted.");
-
-            Console.WriteLine("  Key pressed: {0}", args.SpecialKey);
-
-            Console.WriteLine("  Cancel property: {0}", args.Cancel);
-
-            // Set the Cancel property to true to prevent the process from terminating.
-            Console.WriteLine("Setting the Cancel property to true...");
-            args.Cancel = true;
-
-            // Announce the new value of the Cancel property.
-            Console.WriteLine("  Cancel property: {0}", args.Cancel);
-            Console.WriteLine("The read operation will resume...\n");
+            try
+            {
+                using (FileStream inFile = new FileStream(SourceFile, FileMode.Open))
+                {
+                    var SourceBytes = new byte[inFile.Length];
+                    inFile.Read(SourceBytes, 0, (int)inFile.Length);
+                    Console.WriteLine("Размер файла: " + inFile.Length);
+                    inFile.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.ReadLine();
+            }
         }
+
+        static void Writer()
+        {
+            try
+            {
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.ReadLine();
+            }
+        }
+
+
+        // создание потока на чтение файла по байтам, блоками ? 
+        // сохраннеие блоков в памяти
+        // применение многопоточного сжатия для каждого блока
+        // прогресс сжатия (сначала примитивно в процентах)
+        // создание потока на запись нового файла *.gz
+
+
+        //
+
+
+
+
     }
+
+
+
+
+
+
 
 }

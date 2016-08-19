@@ -40,8 +40,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="getKey.cs" />
+    <Compile Include="getRam.cs" />
+    <Compile Include="gzip1_1.cs" />
+    <Compile Include="gzip1_2.cs" />
+    <Compile Include="gzip52.cs" />
+    <Compile Include="gzip53.cs" />
+    <Compile Include="no_gzip42_pl.cs" />
+    <Compile Include="no_gzip2_fs.cs" />
+    <Compile Include="no_gzip41_pool.cs" />
+    <Compile Include="gzip51.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
