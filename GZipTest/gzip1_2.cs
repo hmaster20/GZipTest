@@ -8,14 +8,13 @@ using System.Threading;
 
 namespace GZipTest
 {
-    static class gzip1_2
+    public static class gzip1_2
     {
         //После изучения спецификации GZIP, я нашел способ универсального архива без включения в архив паразитных байтов.
         //можно сжать/распаковывать на любой тачке с любым количеством процессоров.
         //Не ожидал от майкрософта такой кривой и обрезанной реализации GZIP.
         //Нет никакой программной реализации доступа к флагам и свойствам архива - всё только ручками.В общем, сделал.
         //
-        //Принцип следующий -
         //1. создаём массив байтовых массивов размерностью[количество потоков(процессоров)][длина порции данных].
         //2. читаем часть файла в этот массив.
         //3. жмем этот массив в другой массив (compressedDataArray)
@@ -44,8 +43,9 @@ namespace GZipTest
         public static void Compress(string inFileName)
             {
             //int dataPortionSize = Environment.SystemPageSize / threadNumber; // может вызывать ошибку
-            int dataPortionSize = 2 ^ 20; // размер блока для сжатия
-                try
+            //int dataPortionSize = 2 ^ 20; // размер блока для сжатия
+            int dataPortionSize = 2; // размер блока для сжатия
+            try
                 {
                     FileStream inFile = new FileStream(inFileName, FileMode.Open);
                     FileStream outFile = new FileStream(inFileName + ".gz", FileMode.Append);

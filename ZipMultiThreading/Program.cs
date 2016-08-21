@@ -10,7 +10,7 @@ namespace ZipMultiThreading
         private static void Main(string[] args)
         {
             var cryptCompress = new CryptCompress();
-            var thread = new Thread(() => cryptCompress.CompressFile("kurs.docx"));
+            var thread = new Thread(() => cryptCompress.CompressFile("test2.doc"));
             thread.Start();
 
             int cnt = 0;
@@ -21,8 +21,8 @@ namespace ZipMultiThreading
                 Thread.Sleep(50);
             }
 
-            Console.WriteLine("Before Compression KBytes: {0}", cryptCompress.BeforeCompressionBytes / 1000);
-            Console.WriteLine("After Compression KBytes: {0}", cryptCompress.AfterCompressionBytes / 1000);
+            Console.WriteLine("Before Compression KBytes: {0}", cryptCompress.BeforeCompressionBytes / 1024);
+            Console.WriteLine("After Compression KBytes: {0}", cryptCompress.AfterCompressionBytes / 1024);
             Console.ReadLine();
         }
     }

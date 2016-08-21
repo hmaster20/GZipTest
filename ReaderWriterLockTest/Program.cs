@@ -28,7 +28,7 @@ public class Test
         Thread[] t = new Thread[numThreads];
         for (int i = 0; i < numThreads; i++)
         {
-            t[i] = new Thread(new ThreadStart(ThreadProc));
+            t[i] = new Thread(new ThreadStart(ThreadProcess));
             t[i].Name = new String(Convert.ToChar(i + 65), 1);
             t[i].Start();
             // if (i > 10)
@@ -49,7 +49,7 @@ public class Test
         Console.ReadLine();
     }
 
-    static void ThreadProc()
+    static void ThreadProcess()
     {
         // As long as a thread runs, it randomly selects various ways to read and write from the shared resource. 
         // Each of the methods demonstrates one or more features of ReaderWriterLock.
