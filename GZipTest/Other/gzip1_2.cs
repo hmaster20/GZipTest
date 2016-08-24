@@ -31,7 +31,7 @@ namespace GZipTest
         static byte[][] dataArray = new byte[threadNumber][];
         static byte[][] compressedDataArray = new byte[threadNumber][];
 
-        static int dataPortionSize = 10000000;
+        //static int dataPortionSize = 10000000;
         //static int dataArraySize = dataPortionSize * threadNumber;
 
         //static void Main(string[] args)

@@ -81,15 +81,6 @@
 
 
 
-	            if (args.Length > 0)
-            {
-                switch (args[0])
-                {
-                    case "compress": Console.WriteLine("compress"); break;
-                    case "decompress": Console.WriteLine("decompress"); break;
-                    default: break;
-                }
-            }
 
 
 

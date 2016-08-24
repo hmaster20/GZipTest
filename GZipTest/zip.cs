@@ -9,31 +9,30 @@ using System.Threading;
 
 namespace GZipTest
 {
-    public  class zip
+    public class GZipCompress
     {
          int threadNumber = Environment.ProcessorCount;
-         byte[][] dataArray ;
-         byte[][] compressedDataArray;
-         int dataPortionSize = (int)Math.Pow(2, 26); //2 ^ 20; // размер блока для сжатия
+         byte[][] dataSource ;
+         byte[][] dataSourceZip;
+         int dataPortionSize = (int)Math.Pow(2, 24); //2 ^ 20; // размер блока для сжатия //16 777 216
 
 
-        public zip()
+        public GZipCompress()
         {
-            dataArray = new byte[threadNumber][];
-            compressedDataArray = new byte[threadNumber][];
+            dataSource = new byte[threadNumber][];
+            dataSourceZip = new byte[threadNumber][];
         }
-        //static int dataPortionSize = 10000000;
 
-        public  void Compress(string inFileName)
+        public void Compress(string FileIn, string FileOut)
         {
             try
             {
-                using (FileStream inFile = new FileStream(inFileName, FileMode.Open))
-                using (FileStream outFile = new FileStream(inFileName + ".gz", FileMode.Append))
+                using (FileStream inFile = new FileStream(FileIn, FileMode.Open))
+                using (FileStream outFile = new FileStream(FileOut, FileMode.Append))
                 {
                     int _dataPortionSize;
                     Thread[] tPool;
-                    Console.Write("Compressing...");
+                    Console.Write("Сжатие...");
 
                     while (inFile.Position < inFile.Length)
                     {
@@ -51,11 +50,12 @@ namespace GZipTest
                             {
                                 _dataPortionSize = dataPortionSize;
                             }
-                            dataArray[pCount] = new byte[_dataPortionSize];
-                            inFile.Read(dataArray[pCount], 0, _dataPortionSize);
+                            dataSource[pCount] = new byte[_dataPortionSize];
+                            inFile.Read(dataSource[pCount], 0, _dataPortionSize);
 
                             tPool[pCount] = new Thread(CompressBlock);
                             tPool[pCount].Name = "Tred_"+ pCount;
+                            //tPool[pCount].Priority = ThreadPriority.AboveNormal;
                             tPool[pCount].Start(pCount);
                         }
                         for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);)
@@ -68,9 +68,9 @@ namespace GZipTest
 
                             if (tPool[portionCount].ThreadState == ThreadState.Stopped)
                             {   // добавлен блок обработки паразитивных байт
-                                BitConverter.GetBytes(compressedDataArray[portionCount].Length + 1)
-                                            .CopyTo(compressedDataArray[portionCount], 4);
-                                outFile.Write(compressedDataArray[portionCount], 0, compressedDataArray[portionCount].Length);
+                                BitConverter.GetBytes(dataSourceZip[portionCount].Length + 1)
+                                            .CopyTo(dataSourceZip[portionCount], 4);
+                                outFile.Write(dataSourceZip[portionCount], 0, dataSourceZip[portionCount].Length);
                                 portionCount++;
                             }
                         }
@@ -87,13 +87,13 @@ namespace GZipTest
 
         private  void CompressBlock(object i)
         {
-            using (MemoryStream output = new MemoryStream(dataArray[(int)i].Length))
+            using (MemoryStream output = new MemoryStream(dataSource[(int)i].Length))
             {
                 using (GZipStream cs = new GZipStream(output, CompressionMode.Compress))
                 {
-                    cs.Write(dataArray[(int)i], 0, dataArray[(int)i].Length);
+                    cs.Write(dataSource[(int)i], 0, dataSource[(int)i].Length);
                 }
-                compressedDataArray[(int)i] = output.ToArray();
+                dataSourceZip[(int)i] = output.ToArray();
             }
         }
 
