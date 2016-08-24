@@ -11,19 +11,20 @@ namespace GZipTest
 {
     public class GZipCompress
     {
-         int threadNumber = Environment.ProcessorCount;
-         byte[][] dataSource ;
-         byte[][] dataSourceZip;
-         int dataPortionSize = (int)Math.Pow(2, 24); //2 ^ 20; // размер блока для сжатия //16 777 216
-
+        int threadNumber = Environment.ProcessorCount;
+        byte[][] dataSource;
+        byte[][] dataSourceZip;
+        int dataPortionSize = (int)Math.Pow(2, 24); // размер блока для сжатия //16 777 216
+        bool isStop;
 
         public GZipCompress()
         {
             dataSource = new byte[threadNumber][];
             dataSourceZip = new byte[threadNumber][];
+            isStop = false;
         }
 
-        public void Compress(string FileIn, string FileOut)
+        public int Compress(string FileIn, string FileOut)
         {
             try
             {
@@ -36,11 +37,8 @@ namespace GZipTest
 
                     while (inFile.Position < inFile.Length)
                     {
-                        tPool = new Thread[threadNumber];
-                       
-                        for (int pCount = 0;
-                             (pCount < threadNumber) && (inFile.Position < inFile.Length);
-                             pCount++)
+                        tPool = new Thread[threadNumber];//потоки
+                        for (int pCount = 0; (pCount < threadNumber) && (inFile.Position < inFile.Length); pCount++)
                         {
                             if (inFile.Length - inFile.Position <= dataPortionSize)
                             {
@@ -54,38 +52,42 @@ namespace GZipTest
                             inFile.Read(dataSource[pCount], 0, _dataPortionSize);
 
                             tPool[pCount] = new Thread(CompressBlock);
-                            tPool[pCount].Name = "Tred_"+ pCount;
-                            //tPool[pCount].Priority = ThreadPriority.AboveNormal;
+                            tPool[pCount].Name = "Tred_" + pCount;
                             tPool[pCount].Start(pCount);
+
                         }
                         for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);)
                         {
-                            // поясню: потоки завершаются при завершении выполнения функции в нем. Завершения потоков я жду в следующей конструкции:
-                            //Завершенный процесс имеет статус Stopped, пока все не Stopped, запись не производится.
-                            //Немного деревянно(относительно процессорного времени), но работает хорошо.
-                            //Перед записью на диск вызовите Thread.Join на соответствующем потоке, чтобы убедиться что он завершился.
-                            //Советую, все же вызвать Join, и убрать if.
+                            tPool[portionCount].Join();
+                            BitConverter.GetBytes(dataSourceZip[portionCount].Length + 1).CopyTo(dataSourceZip[portionCount], 4);
+                            outFile.Write(dataSourceZip[portionCount], 0, dataSourceZip[portionCount].Length);
+                            portionCount++;
 
-                            if (tPool[portionCount].ThreadState == ThreadState.Stopped)
-                            {   // добавлен блок обработки паразитивных байт
-                                BitConverter.GetBytes(dataSourceZip[portionCount].Length + 1)
-                                            .CopyTo(dataSourceZip[portionCount], 4);
-                                outFile.Write(dataSourceZip[portionCount], 0, dataSourceZip[portionCount].Length);
-                                portionCount++;
-                            }
+                            //if (tPool[portionCount].ThreadState == ThreadState.Stopped)
+                            //{   // добавлен блок обработки паразитивных байт
+                            //    BitConverter.GetBytes(dataSourceZip[portionCount].Length + 1).CopyTo(dataSourceZip[portionCount], 4);
+                            //    outFile.Write(dataSourceZip[portionCount], 0, dataSourceZip[portionCount].Length);
+                            //    portionCount++;
+                            //}
+                        }
+                        if (isStop)
+                        {
+                            break;
                         }
 
                     }
-                }
 
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("ERROR:" + ex.Message);
+                isStop = true;
             }
+            return isStop ? 1 : 0;
         }
 
-        private  void CompressBlock(object i)
+        private void CompressBlock(object i)
         {
             using (MemoryStream output = new MemoryStream(dataSource[(int)i].Length))
             {
@@ -97,5 +99,11 @@ namespace GZipTest
             }
         }
 
+        public void myHandler(object sender, ConsoleCancelEventArgs args)
+        {
+            isStop = true;
+            args.Cancel = true;
+            Console.WriteLine("Архивация прервана пользователем!");
+        }
     }
 }

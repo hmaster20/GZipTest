@@ -10,23 +10,24 @@ namespace GZipTest
         public static void Mainen()
         {
             ConsoleKeyInfo cki;
-
             Console.Clear();
-
-            // Establish an event handler to process key press events.
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
+            //Создание обработчика событий для обработки события нажатия клавиш.
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);//срабатывает при нажатии Ctrl+C
             while (true)
             {
                 Console.Write("Press any key, or 'X' to quit, or ");
                 Console.WriteLine("CTRL+C to interrupt the read operation:");
 
                 // Start a console read operation. Do not display the input.
+                // Запустите консоль операции чтения. Не показывать вход.
                 cki = Console.ReadKey(true);
 
                 // Announce the name of the key that was pressed .
+                // Огласите имя ключа, которая была нажата.
                 Console.WriteLine("  Key pressed: {0}\n", cki.Key);
 
                 // Exit if the user pressed the 'X' key.
+                // Выход, если пользователь нажал клавишу 'X'.
                 if (cki.Key == ConsoleKey.X) break;
             }
         }
