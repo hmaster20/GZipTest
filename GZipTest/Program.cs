@@ -1,18 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
-
-
 
 namespace GZipTest
 {
     class Program
     {
-        static int code = 0;
+        static int code;// = 0;
         public static void Main(string[] args)
         {
-           //zip("test.pdf", "test.pdf.gz");
-            zip("test3.avhdx", "test3.avhdx.gz");
+            //zip("test.txt", "test.txt.gz");
+            //zip("test.pdf", "test.pdf.gz");
+            //zip("test3.avhdx", "test3.avhdx.gz");
+            //code =  zip("test3.pdf", "test3.pdf.gz");
+            //unzip("test32.pdf.gz");
 
 
             //if (args.Length == 3)
@@ -25,24 +27,33 @@ namespace GZipTest
             //    }
             //}
             //else if (args.Length == 0 || args.Length > 3) help(); code = 1;
-            Console.WriteLine("code:" + code);
+
+            Console.WriteLine("Result code: " + code);
             Console.ReadLine();
 
             // GC.Collect();
             Environment.Exit(code);
         }
 
-        private static void zip(string file, string filezip)
+
+        private static int zip(string file, string filezip)
         {
             GZipCompress zip = new GZipCompress();
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(zip.Handler);//срабатывает при нажатии Ctrl+C
-            code = zip.Compress(file, filezip);
-            zip = null;
+             return zip.Compress(file, filezip);
+            //zip = null;
+        }
+
+        private static void unzip(string file)
+        {
+            GZipUnCompress unzip = new GZipUnCompress();
+            // code = unzip.Decompress(file);
+            unzip.Decompress(file);
+            unzip = null;
         }
 
         private static void help()
         {
-            Console.WriteLine("Справка по использованию програмы архиватора.\n");
+            Console.WriteLine("Справка по использованию программы архиватора.\n");
             Console.WriteLine("gziptest <команда> [файл 1] [файл 2]\n");
             Console.WriteLine("<команда>");
             Console.WriteLine("compress\t - выполняет сжатие [исходного файла]");

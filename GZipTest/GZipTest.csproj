@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GZip.cs" />
     <Compile Include="Other\getKey.cs" />
     <Compile Include="Other\getRam.cs" />
     <Compile Include="Other\gzip1_1.cs" />
@@ -50,11 +51,13 @@
     <Compile Include="Other\no_gzip2_fs.cs" />
     <Compile Include="Other\no_gzip41_pool.cs" />
     <Compile Include="Other\gzip51.cs" />
-    <Compile Include="zip.cs" />
+    <Compile Include="GZipUnCompress.cs" />
+    <Compile Include="GZipCompress.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Other\ReadWrite.cs" />
     <Compile Include="Other\ZipStreamOne.cs" />
+    <Compile Include="test.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Other\ReadMe.txt" />

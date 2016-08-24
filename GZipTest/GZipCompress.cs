@@ -9,19 +9,10 @@ using System.Threading;
 
 namespace GZipTest
 {
-    public class GZipCompress
+    public class GZipCompress : GZip
     {
-        int threadNumber;
-        byte[][] dataSource;
-        byte[][] dataSourceZip;
-        int dataPortionSize;
-        bool isStop;
-
         public GZipCompress()
         {
-            threadNumber = Environment.ProcessorCount;
-            dataSource = new byte[threadNumber][];
-            dataSourceZip = new byte[threadNumber][];
             dataPortionSize = (int)Math.Pow(2, 24); // размер блока для сжатия равен 16 777 216 байт
             isStop = false;
         }
@@ -39,7 +30,7 @@ namespace GZipTest
 
                     while (File.Position < File.Length)
                     {
-                        tPool = new Thread[threadNumber];//потоки
+                        tPool = new Thread[threadNumber];
                         for (int tCount = 0; (tCount < threadNumber) && (File.Position < File.Length); tCount++)
                         {
                             if (File.Length - File.Position <= dataPortionSize)
@@ -68,7 +59,6 @@ namespace GZipTest
                         }
                         if (isStop) break;
                     }
-
                 }
             }
             catch (Exception ex)
@@ -89,13 +79,6 @@ namespace GZipTest
                 }
                 dataSourceZip[(int)i] = output.ToArray();
             }
-        }
-
-        public void Handler(object sender, ConsoleCancelEventArgs args)
-        {
-            isStop = true;
-            args.Cancel = true;
-            Console.WriteLine("Архивация прервана пользователем!");
         }
     }
 }
