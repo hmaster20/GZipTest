@@ -35,7 +35,7 @@ namespace GZipTest
         private static void zip(string file, string filezip)
         {
             GZipCompress zip = new GZipCompress();
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(zip.myHandler);//срабатывает при нажатии Ctrl+C
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(zip.Handler);//срабатывает при нажатии Ctrl+C
             code = zip.Compress(file, filezip);
             zip = null;
         }

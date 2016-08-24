@@ -11,16 +11,18 @@ namespace GZipTest
 {
     public class GZipCompress
     {
-        int threadNumber = Environment.ProcessorCount;
+        int threadNumber;
         byte[][] dataSource;
         byte[][] dataSourceZip;
-        int dataPortionSize = (int)Math.Pow(2, 24); // размер блока для сжатия //16 777 216
+        int dataPortionSize;
         bool isStop;
 
         public GZipCompress()
         {
+            threadNumber = Environment.ProcessorCount;
             dataSource = new byte[threadNumber][];
             dataSourceZip = new byte[threadNumber][];
+            dataPortionSize = (int)Math.Pow(2, 24); // размер блока для сжатия равен 16 777 216 байт
             isStop = false;
         }
 
@@ -28,53 +30,43 @@ namespace GZipTest
         {
             try
             {
-                using (FileStream inFile = new FileStream(FileIn, FileMode.Open))
-                using (FileStream outFile = new FileStream(FileOut, FileMode.Append))
+                using (FileStream File = new FileStream(FileIn, FileMode.Open))
+                using (FileStream FileZip = new FileStream(FileOut, FileMode.Append))
                 {
-                    int _dataPortionSize;
+                    int dataSourceBlock;
                     Thread[] tPool;
                     Console.Write("Сжатие...");
 
-                    while (inFile.Position < inFile.Length)
+                    while (File.Position < File.Length)
                     {
                         tPool = new Thread[threadNumber];//потоки
-                        for (int pCount = 0; (pCount < threadNumber) && (inFile.Position < inFile.Length); pCount++)
+                        for (int tCount = 0; (tCount < threadNumber) && (File.Position < File.Length); tCount++)
                         {
-                            if (inFile.Length - inFile.Position <= dataPortionSize)
+                            if (File.Length - File.Position <= dataPortionSize)
                             {
-                                _dataPortionSize = (int)(inFile.Length - inFile.Position);
+                                dataSourceBlock = (int)(File.Length - File.Position);
                             }
                             else
                             {
-                                _dataPortionSize = dataPortionSize;
+                                dataSourceBlock = dataPortionSize;
                             }
-                            dataSource[pCount] = new byte[_dataPortionSize];
-                            inFile.Read(dataSource[pCount], 0, _dataPortionSize);
+                            dataSource[tCount] = new byte[dataSourceBlock];
+                            File.Read(dataSource[tCount], 0, dataSourceBlock);
 
-                            tPool[pCount] = new Thread(CompressBlock);
-                            tPool[pCount].Name = "Tred_" + pCount;
-                            tPool[pCount].Start(pCount);
+                            tPool[tCount] = new Thread(CompressBlock);
+                            tPool[tCount].Name = "Tr_" + tCount;
+                            tPool[tCount].Start(tCount);
 
                         }
                         for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);)
                         {
+                            //if (tPool[portionCount].ThreadState == ThreadState.Stopped)
                             tPool[portionCount].Join();
                             BitConverter.GetBytes(dataSourceZip[portionCount].Length + 1).CopyTo(dataSourceZip[portionCount], 4);
-                            outFile.Write(dataSourceZip[portionCount], 0, dataSourceZip[portionCount].Length);
+                            FileZip.Write(dataSourceZip[portionCount], 0, dataSourceZip[portionCount].Length);
                             portionCount++;
-
-                            //if (tPool[portionCount].ThreadState == ThreadState.Stopped)
-                            //{   // добавлен блок обработки паразитивных байт
-                            //    BitConverter.GetBytes(dataSourceZip[portionCount].Length + 1).CopyTo(dataSourceZip[portionCount], 4);
-                            //    outFile.Write(dataSourceZip[portionCount], 0, dataSourceZip[portionCount].Length);
-                            //    portionCount++;
-                            //}
                         }
-                        if (isStop)
-                        {
-                            break;
-                        }
-
+                        if (isStop) break;
                     }
 
                 }
@@ -99,7 +91,7 @@ namespace GZipTest
             }
         }
 
-        public void myHandler(object sender, ConsoleCancelEventArgs args)
+        public void Handler(object sender, ConsoleCancelEventArgs args)
         {
             isStop = true;
             args.Cancel = true;
