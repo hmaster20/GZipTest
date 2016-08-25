@@ -40,7 +40,6 @@ namespace GZipTest
             Environment.Exit(code);
         }
 
-
         private static int zip(string file, string filezip)
         {
             GZipCompress zip = new GZipCompress();
