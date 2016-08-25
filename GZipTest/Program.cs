@@ -14,7 +14,8 @@ namespace GZipTest
             //zip("test.pdf", "test.pdf.gz");
             //zip("test3.avhdx", "test3.avhdx.gz");
             //code =  zip("test3.pdf", "test3.pdf.gz");
-            //unzip("test32.pdf.gz");
+            //unzip("test22.pdf.gz");
+            GZipUnCompress.DeCompressFile("test22.pdf.gz", "test22.pdf");
 
 
             //if (args.Length == 3)
@@ -27,6 +28,10 @@ namespace GZipTest
             //    }
             //}
             //else if (args.Length == 0 || args.Length > 3) help(); code = 1;
+
+
+
+
 
             Console.WriteLine("Result code: " + code);
             Console.ReadLine();
