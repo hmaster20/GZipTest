@@ -84,7 +84,7 @@ namespace GZipTest
 
 
 
-        // http://stackoverflow.com/questions/14422773/decompress-a-gz-file-using-gzipstream
+        // stackoverflow.com/questions/14422773/decompress-a-gz-file-using-gzipstream
         public static void DeCompressFile(string CompressedFile, string DeCompressedFile)
         {
             byte[] buffer = new byte[1024 * 1024];
@@ -118,7 +118,7 @@ namespace GZipTest
         }               // End Sub DeCompressFile
 
 
-        // http://www.dotnetperls.com/decompress
+        // www.dotnetperls.com/decompress
         public static byte[] Decompress(byte[] gzip)
         {
             byte[] baRetVal = null;
