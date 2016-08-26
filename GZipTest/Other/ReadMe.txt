@@ -139,8 +139,10 @@ Environment.ExitCode
 
 
 
-
-
+Решение пункта 1.2
+###################################################################################################################################################
+        // stackoverflow.com/questions/14422773/decompress-a-gz-file-using-gzipstream
+		       // www.dotnetperls.com/decompress
 
 
 

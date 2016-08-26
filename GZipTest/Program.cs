@@ -13,9 +13,9 @@ namespace GZipTest
             //zip("test.txt", "test.txt.gz");
             //zip("test.pdf", "test.pdf.gz");
             //zip("test3.avhdx", "test3.avhdx.gz");
-            //code =  zip("test3.pdf", "test3.pdf.gz");
-            //unzip("test22.pdf.gz");
-            GZipUnCompress.DeCompressFile("test22.pdf.gz", "test22.pdf");
+            //code =  zip("zip_unzip.pdf", "zip_unzip.pdf.gz");
+            unzip("test22.pdf.gz");
+            //GZipUnCompress.DeCompressFile("zip_unzip.pdf.gz", "zip_unzip_u.pdf");
 
 
             //if (args.Length == 3)

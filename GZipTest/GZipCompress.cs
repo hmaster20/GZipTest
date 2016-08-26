@@ -13,7 +13,7 @@ namespace GZipTest
     {
         public GZipCompress()
         {
-            dataPortionSize = (int)Math.Pow(2, 24); // размер блока для сжатия равен 16 777 216 байт
+            dataPortionSize = (int)Math.Pow(2, 20); // размер блока 2^24 равен 16.777.216 байт, 2^20 равен 1.048.576 
             isStop = false;
         }
 
