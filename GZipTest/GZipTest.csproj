@@ -57,7 +57,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Other\ReadWrite.cs" />
     <Compile Include="Other\ZipStreamOne.cs" />
-    <Compile Include="test.cs" />
+    <Compile Include="Other\test.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Other\ReadMe.txt" />
