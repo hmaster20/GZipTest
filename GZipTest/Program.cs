@@ -14,9 +14,15 @@ namespace GZipTest
             //zip("test.pdf", "test.pdf.gz");
             //zip("test3.avhdx", "test3.avhdx.gz");
             //code =  zip("zip_unzip.pdf", "zip_unzip.pdf.gz");
-            unzip("test22.pdf.gz");
-            //GZipUnCompress.DeCompressFile("zip_unzip.pdf.gz", "zip_unzip_u.pdf");
+            //unzip("test22.pdf.gz");
 
+            //unzip("test22.pdf.gz");
+
+            unzip("test22.doc.gz");
+
+
+            //GZipUnCompress.DeCompressFile("zip_unzip.pdf.gz", "zip_unzip_u.pdf");
+          
 
             //if (args.Length == 3)
             //{
@@ -49,10 +55,15 @@ namespace GZipTest
 
         private static void unzip(string file)
         {
-            GZipUnCompress unzip = new GZipUnCompress();
+            //GZipUnCompress unzip = new GZipUnCompress();
+            //unzip.Decompress("");
+            GZipUnCompress.DecompressMod(file);
+
             // code = unzip.Decompress(file);
-            unzip.Decompress(file);
-            unzip = null;
+            // unzip.Decompress(file);
+            //unzip.de.Decom(file);
+
+            //unzip = null;
         }
 
         private static void help()
