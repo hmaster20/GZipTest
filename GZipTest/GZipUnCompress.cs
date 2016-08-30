@@ -188,6 +188,7 @@ namespace GZipTest
             }
         }
 
+        // //msdn.microsoft.com/ru-ru/library/xxwd7aah(v=vs.110).aspx
 
 
 
@@ -247,13 +248,12 @@ namespace GZipTest
 
 
 
+        // #############################################################################################################
 
-    // #############################################################################################################
 
 
 
-
-    public static void DeCompressFile(string CompressedFile, string DeCompressedFile)
+        public static void DeCompressFile(string CompressedFile, string DeCompressedFile)
         {
             byte[] buffer = new byte[1024 * 1024];// 1048576 // 2^20
             using (FileStream fstrmCompressedFile = File.OpenRead(CompressedFile)) // прочитали архив
