@@ -10,8 +10,21 @@ namespace GZipTest
         internal int threadNumber;
         internal byte[][] dataSource;
         internal byte[][] dataSourceZip;
-        internal int dataPortionSize;
-        internal bool isStop;
+
+        private int blockForCompress = (int)Math.Pow(2, 20); // размер блока 2^24 равен 16.777.216 байт, 2^20 равен 1.048.576 
+        internal int BlockForCompress
+        {
+            get { return blockForCompress; }
+            set { blockForCompress = value; }
+        }
+
+        private bool isStop = false;
+        internal bool IsStop
+        {
+            get { return isStop; }
+            set { isStop = value; }
+        }
+
 
         public GZip()
         {
@@ -23,7 +36,7 @@ namespace GZipTest
 
         public void Handler(object sender, ConsoleCancelEventArgs args)
         {
-            isStop = true;
+            IsStop = true;
             args.Cancel = true;
             Console.WriteLine("Операция прервана пользователем!");
         }

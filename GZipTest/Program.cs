@@ -12,13 +12,13 @@ namespace GZipTest
         {
             //zip("test.txt", "test.txt.gz");
             //zip("test.pdf", "test.pdf.gz");
-            //zip("test3.avhdx", "test3.avhdx.gz");
+            zip("test3.avhdx", "test3.avhdx.gz");
             //code =  zip("zip_unzip.pdf", "zip_unzip.pdf.gz");
             //unzip("test22.pdf.gz");
 
             //unzip("test22.pdf.gz");
 
-            unzip("test22.doc.gz");
+            //unzip("test22.doc.gz");
 
 
             //GZipUnCompress.DeCompressFile("zip_unzip.pdf.gz", "zip_unzip_u.pdf");
@@ -57,7 +57,8 @@ namespace GZipTest
         {
             //GZipUnCompress unzip = new GZipUnCompress();
             //unzip.Decompress("");
-            GZipUnCompress.DecompressMod(file);
+
+            //GZipUnCompress.DecompressMod(file);
 
             // code = unzip.Decompress(file);
             // unzip.Decompress(file);

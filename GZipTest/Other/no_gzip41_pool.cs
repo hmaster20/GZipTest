@@ -5,8 +5,9 @@ using System.Threading;
 
 namespace GZipTest
 {
-    //public static class gzip41
-    //{
+    static class gzip41
+    {
+
     //    static int BufferSize = 8192;
     //    static public void Compress(string inFileName)
     //    {
@@ -69,30 +70,30 @@ namespace GZipTest
     //    }
 
 
-    //    private static void runing()
+    //private static void runing()
+    //{
+    //    for (j = 0; (j < multithread - 1) && ((inFile.Length - inFile.Position) > BufferSize); j++)
     //    {
-    //          for (j = 0; (j < multithread - 1) && ((inFile.Length - inFile.Position) > BufferSize); j++)
-    //        {
-    //            thread[j] = new Thread(() =>
+    //        thread[j] = new Thread(() =>
     //            {
-    //                Console.Write("- {0} -", j);
-    //                read[j] = inFile.Read(buffer, 0, BufferSize);
-    //                inGZip.Write(buffer, 0, read[j]);
+    //            Console.Write("- {0} -", j);
+    //            read[j] = inFile.Read(buffer, 0, BufferSize);
+    //            inGZip.Write(buffer, 0, read[j]);
     //            });
-    //            thread[j].Start();
-    //            Thread.Sleep(500);
-    //            thread[j].Join();
-    //            thread[j] = new Thread(() =>
+    //        thread[j].Start();
+    //        Thread.Sleep(500);
+    //        thread[j].Join();
+    //        thread[j] = new Thread(() =>
     //            {
-    //                inGZip.Write(buffer, 0, read[j]);
-    //                Console.Write("|");
-    //                Thread.Sleep(100);
+    //            inGZip.Write(buffer, 0, read[j]);
+    //            Console.Write("|");
+    //            Thread.Sleep(100);
     //            });
-    //            thread_[j].Start();
-    //            thread_[j].Join();
-    //        }
+    //        thread_[j].Start();
+    //        thread_[j].Join();
     //    }
-
-
     //}
+
+
+    }
 }
