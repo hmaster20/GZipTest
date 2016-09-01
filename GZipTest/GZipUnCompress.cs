@@ -189,17 +189,17 @@ namespace GZipTest
                         //========================================================================================================
                         //            read[j] = inFile.Read(buffer, 0, BufferSize);
                         //            inGZip.Write(buffer, 0, read[j]);
-                        using (GZipStream strmUncompress = new GZipStream(ZipFile, CompressionMode.Decompress))
-                        {
-                            int numRead = strmUncompress.Read(buffer, 0, buffer.Length);
-                            while (numRead != 0)
-                            {
-                                File.Write(buffer, 0, numRead);
-                                File.Flush();
-                                numRead = strmUncompress.Read(buffer, 0, buffer.Length);
-                            }
-                            strmUncompress.Close();     // завершение работы GZipStream strmUncompress 
-                        }
+                        //using (GZipStream strmUncompress = new GZipStream(ZipFile, CompressionMode.Decompress))
+                        //{
+                        //    int numRead = strmUncompress.Read(buffer, 0, buffer.Length);
+                        //    while (numRead != 0)
+                        //    {
+                        //        File.Write(buffer, 0, numRead);
+                        //        File.Flush();
+                        //        numRead = strmUncompress.Read(buffer, 0, buffer.Length);
+                        //    }
+                        //    strmUncompress.Close();     // завершение работы GZipStream strmUncompress 
+                        //}
 
                         //inFile.Read(buffer, 0, 8);
                         //compressedBlockLength = BitConverter.ToInt32(buffer, 4);
@@ -233,33 +233,18 @@ namespace GZipTest
             {
                 using (GZipStream ds = new GZipStream(input, CompressionMode.Decompress))
                 {
-                    ds.Read(dataArraySZip[(int)i], 0, dataArraySZip[(int)i].Length);
+                    ds.Read(dataArraySZip[(int)i], 0, dataArraySZip[(int)i].Length); // данные считываются из потока
                 }
             }
         }
 
 
 
-        private void CompressBlock(object i)
-        {
-            using (MemoryStream output = new MemoryStream(dataSource[(int)i].Length))
-            {
-                using (GZipStream cs = new GZipStream(output, CompressionMode.Compress))
-                {
-                    cs.Write(dataSource[(int)i], 0, dataSource[(int)i].Length); // данные записываются в output
-                }
-                dataSourceZip[(int)i] = output.ToArray();   //output переводим в массив и передаем в dataSourceZip
-            }
-        }
 
 
 
 
-
-
-
-
-        //// //msdn.microsoft.com/ru-ru/library/xxwd7aah(v=vs.110).aspx
+        //msdn.microsoft.com/ru-ru/library/xxwd7aah(v=vs.110).aspx
 
 
 
