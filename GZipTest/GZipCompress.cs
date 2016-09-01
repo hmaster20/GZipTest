@@ -13,7 +13,7 @@ namespace GZipTest
     {
         public GZipCompress()
         {
-            dataPortionSize = (int)Math.Pow(2, 20); // размер блока 2^24 равен 16.777.216 байт, 2^20 равен 1.048.576 
+            BlockForCompress = (int)Math.Pow(2, 20); // размер блока 2^24 равен 16.777.216 байт, 2^20 равен 1.048.576 
             isStop = false;
         }
 
@@ -24,29 +24,30 @@ namespace GZipTest
                 using (FileStream File = new FileStream(FileIn, FileMode.Open))
                 using (FileStream FileZip = new FileStream(FileOut, FileMode.Append))
                 {
-                    int dataSourceBlock;
+                    int FileBlock;
                     Thread[] tPool;
                     Console.Write("Сжатие...");
 
                     while (File.Position < File.Length)
                     {
                         tPool = new Thread[threadNumber];
-                        for (int tCount = 0; (tCount < threadNumber) && (File.Position < File.Length); tCount++)
+                        for (int N = 0; (N < threadNumber) && (File.Position < File.Length); N++)
                         {
-                            if (File.Length - File.Position <= dataPortionSize)
+                            if (File.Length - File.Position >= BlockForCompress)
                             {
-                                dataSourceBlock = (int)(File.Length - File.Position);
+                                FileBlock = BlockForCompress;
                             }
                             else
                             {
-                                dataSourceBlock = dataPortionSize;
+                                FileBlock = (int)(File.Length - File.Position);
                             }
-                            dataSource[tCount] = new byte[dataSourceBlock];
-                            File.Read(dataSource[tCount], 0, dataSourceBlock);
 
-                            tPool[tCount] = new Thread(CompressBlock);
-                            tPool[tCount].Name = "Tr_" + tCount;
-                            tPool[tCount].Start(tCount);
+                            dataSource[N] = new byte[FileBlock];
+                            File.Read(dataSource[N], 0, FileBlock);
+
+                            tPool[N] = new Thread(CompressBlock);
+                            tPool[N].Name = "Tr_" + N;
+                            tPool[N].Start(N);
 
                         }
                         for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);)
