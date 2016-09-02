@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReaderWriterLockTest", "Rea
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZipMultiThreading", "ZipMultiThreading\ZipMultiThreading.csproj", "{F6D43068-572E-4239-BB72-383DCA09A670}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZipUnzipString", "GzipString\ZipUnzipString.csproj", "{21804C4C-8798-413D-A02A-FDD01B189C71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZipUnzipExample", "ZipUnzipExample\ZipUnzipExample.csproj", "{52EA8C23-F4A4-461A-98B7-F15F3438138F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{F6D43068-572E-4239-BB72-383DCA09A670}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6D43068-572E-4239-BB72-383DCA09A670}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6D43068-572E-4239-BB72-383DCA09A670}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21804C4C-8798-413D-A02A-FDD01B189C71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21804C4C-8798-413D-A02A-FDD01B189C71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21804C4C-8798-413D-A02A-FDD01B189C71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21804C4C-8798-413D-A02A-FDD01B189C71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52EA8C23-F4A4-461A-98B7-F15F3438138F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52EA8C23-F4A4-461A-98B7-F15F3438138F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52EA8C23-F4A4-461A-98B7-F15F3438138F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52EA8C23-F4A4-461A-98B7-F15F3438138F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
