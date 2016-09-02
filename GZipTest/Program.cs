@@ -16,9 +16,14 @@ namespace GZipTest
             //code =  zip("zip_unzip.pdf", "zip_unzip.pdf.gz");
             //unzip("test22.pdf.gz");
 
-            unzip("test222.pdf.gz");
+            //unzip("test222.pdf.gz");
 
-            //unzip("test22.doc.gz");
+            //unzip("zip_unzip.pdf.gz");
+            gzip1_2.Decompress("zip_unzip.pdf.gz");
+            //GZipUnCompress.DeCompressFile("zip_unzip.pdf.gz", "zip_unzip.pdf");
+
+
+
 
 
             //GZipUnCompress.DeCompressFile("zip_unzip.pdf.gz", "zip_unzip_u.pdf");

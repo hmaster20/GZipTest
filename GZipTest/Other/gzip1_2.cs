@@ -41,44 +41,44 @@ namespace GZipTest
         //}
 
         public static void Compress(string inFileName)
-            {
+        {
             //int dataPortionSize = Environment.SystemPageSize / threadNumber; // может вызывать ошибку
             //int dataPortionSize = 2 ^ 20; // размер блока для сжатия
             int dataPortionSize = 2; // размер блока для сжатия
             try
+            {
+                FileStream inFile = new FileStream(inFileName, FileMode.Open);
+                FileStream outFile = new FileStream(inFileName + ".gz", FileMode.Append);
+
+                int _dataPortionSize;
+                Thread[] tPool;
+
+                Console.Write("Compressing...");
+
+                while (inFile.Position < inFile.Length)
                 {
-                    FileStream inFile = new FileStream(inFileName, FileMode.Open);
-                    FileStream outFile = new FileStream(inFileName + ".gz", FileMode.Append);
-
-                    int _dataPortionSize;
-                    Thread[] tPool;
-
-                    Console.Write("Compressing...");
-
-                    while (inFile.Position < inFile.Length)
+                    Console.Write(".");
+                    tPool = new Thread[threadNumber];
+                    for (int portionCount = 0;
+                         (portionCount < threadNumber) && (inFile.Position < inFile.Length);
+                         portionCount++)
                     {
-                        Console.Write(".");
-                        tPool = new Thread[threadNumber];
-                        for (int portionCount = 0;
-                             (portionCount < threadNumber) && (inFile.Position < inFile.Length);
-                             portionCount++)
+                        if (inFile.Length - inFile.Position <= dataPortionSize)
                         {
-                            if (inFile.Length - inFile.Position <= dataPortionSize)
-                            {
-                                _dataPortionSize = (int)(inFile.Length - inFile.Position);
-                            }
-                            else
-                            {
-                                _dataPortionSize = dataPortionSize;
-                            }
-                            dataArray[portionCount] = new byte[_dataPortionSize];
-                            inFile.Read(dataArray[portionCount], 0, _dataPortionSize);
-
-                            tPool[portionCount] = new Thread(CompressBlock);
-                            tPool[portionCount].Start(portionCount);
+                            _dataPortionSize = (int)(inFile.Length - inFile.Position);
                         }
-                        for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);)
+                        else
                         {
+                            _dataPortionSize = dataPortionSize;
+                        }
+                        dataArray[portionCount] = new byte[_dataPortionSize];
+                        inFile.Read(dataArray[portionCount], 0, _dataPortionSize);
+
+                        tPool[portionCount] = new Thread(CompressBlock);
+                        tPool[portionCount].Start(portionCount);
+                    }
+                    for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);)
+                    {
                         // поясню: потоки завершаются при завершении выполнения функции в нем. Завершения потоков я жду в следующей конструкции:
                         //Завершенный процесс имеет статус Stopped, пока все не Stopped, запись не производится.
                         //Немного деревянно(относительно процессорного времени), но работает хорошо.
@@ -86,102 +86,101 @@ namespace GZipTest
                         //Советую, все же вызвать Join, и убрать if.
 
                         if (tPool[portionCount].ThreadState == ThreadState.Stopped)
-                            {   // добавлен блок обработки паразитивных байт
-                                BitConverter.GetBytes(compressedDataArray[portionCount].Length + 1)
-                                            .CopyTo(compressedDataArray[portionCount], 4);
-                                outFile.Write(compressedDataArray[portionCount], 0, compressedDataArray[portionCount].Length);
-                                portionCount++;
-                            }
-                        }
-
-                    }
-                    outFile.Close();
-                    inFile.Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("ERROR:" + ex.Message);
-                }
-            }
-
-            public static void CompressBlock(object i)
-            {
-                using (MemoryStream output = new MemoryStream(dataArray[(int)i].Length))
-                {
-                    using (GZipStream cs = new GZipStream(output, CompressionMode.Compress))
-                    {
-                        cs.Write(dataArray[(int)i], 0, dataArray[(int)i].Length);
-                    }
-                    compressedDataArray[(int)i] = output.ToArray();
-                }
-            }
-
-
-
-            public static void Decompress(string inFileName)
-            {
-                try
-                {
-                    FileStream inFile = new FileStream(inFileName, FileMode.Open);
-                    FileStream outFile = new FileStream(inFileName.Remove(inFileName.Length - 3), FileMode.Append);
-                    int _dataPortionSize;
-                    int compressedBlockLength;
-                    Thread[] tPool;
-                    Console.Write("Decompressing...");
-                    byte[] buffer = new byte[8];
-
-
-                    while (inFile.Position < inFile.Length)
-                    {
-                        Console.Write(".");
-                        tPool = new Thread[threadNumber];
-                        for (int portionCount = 0;
-                             (portionCount < threadNumber) && (inFile.Position < inFile.Length);
-                             portionCount++)
-                        {
-                            inFile.Read(buffer, 0, 8);
-                            compressedBlockLength = BitConverter.ToInt32(buffer, 4);
-                            compressedDataArray[portionCount] = new byte[compressedBlockLength + 1];
-                            buffer.CopyTo(compressedDataArray[portionCount], 0);
-
-                            inFile.Read(compressedDataArray[portionCount], 8, compressedBlockLength - 8);
-                            _dataPortionSize = BitConverter.ToInt32(compressedDataArray[portionCount], compressedBlockLength - 4);
-                            dataArray[portionCount] = new byte[_dataPortionSize];
-
-                            tPool[portionCount] = new Thread(DecompressBlock);
-                            tPool[portionCount].Start(portionCount);
-                        }
-
-                        for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);) // выяснить работу последнего блока
-                        {
-                            if (tPool[portionCount].ThreadState == ThreadState.Stopped)
-                            {
-                                outFile.Write(dataArray[portionCount], 0, dataArray[portionCount].Length);
-                                portionCount++;
-                            }
+                        {   // добавлен блок обработки паразитивных байт
+                            BitConverter.GetBytes(compressedDataArray[portionCount].Length + 1)
+                                        .CopyTo(compressedDataArray[portionCount], 4);
+                            outFile.Write(compressedDataArray[portionCount], 0, compressedDataArray[portionCount].Length);
+                            portionCount++;
                         }
                     }
-                    outFile.Close();
-                    inFile.Close();
+
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("ERROR:" + ex.Message);
-                }
+                outFile.Close();
+                inFile.Close();
             }
-
-            public static void DecompressBlock(object i)
+            catch (Exception ex)
             {
-                using (MemoryStream input = new MemoryStream(compressedDataArray[(int)i]))
-                {
-
-                    using (GZipStream ds = new GZipStream(input, CompressionMode.Decompress))
-                    {
-                        ds.Read(dataArray[(int)i], 0, dataArray[(int)i].Length);
-                    }
-                }
+                Console.WriteLine("ERROR:" + ex.Message);
             }
         }
 
-    
+        public static void CompressBlock(object i)
+        {
+            using (MemoryStream output = new MemoryStream(dataArray[(int)i].Length))
+            {
+                using (GZipStream cs = new GZipStream(output, CompressionMode.Compress))
+                {
+                    cs.Write(dataArray[(int)i], 0, dataArray[(int)i].Length);
+                }
+                compressedDataArray[(int)i] = output.ToArray();
+            }
+        }
+
+
+
+        public static void Decompress(string inFileName)
+        {
+            try
+            {
+                FileStream inFile = new FileStream(inFileName, FileMode.Open);
+                FileStream outFile = new FileStream(inFileName.Remove(inFileName.Length - 3), FileMode.Append);
+                int _dataPortionSize;
+                int compressedBlockLength;
+                Thread[] tPool;
+                Console.Write("Decompressing...");
+                byte[] buffer = new byte[8];
+
+
+                while (inFile.Position < inFile.Length)
+                {
+                    Console.Write(".");
+                    tPool = new Thread[threadNumber];
+                    for (int portionCount = 0; (portionCount < threadNumber) && (inFile.Position < inFile.Length); portionCount++)
+                    {
+                        inFile.Read(buffer, 0, 8);  //чтение 8 байт и запись в buffer
+                        compressedBlockLength = BitConverter.ToInt32(buffer, 4);    // возваращает число на основе 4 байт начиная с позиции 4
+                        compressedDataArray[portionCount] = new byte[compressedBlockLength + 1];//создаем массив размером 
+                        buffer.CopyTo(compressedDataArray[portionCount], 0);
+
+
+                        inFile.Read(compressedDataArray[portionCount], 8, compressedBlockLength - 8);
+                        _dataPortionSize = BitConverter.ToInt32(compressedDataArray[portionCount], compressedBlockLength - 4);
+                        dataArray[portionCount] = new byte[_dataPortionSize];
+
+                        tPool[portionCount] = new Thread(DecompressBlock);
+                        tPool[portionCount].Start(portionCount);
+                    }
+
+                    for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);) // выяснить работу последнего блока
+                    {
+                        if (tPool[portionCount].ThreadState == ThreadState.Stopped)
+                        {
+                            outFile.Write(dataArray[portionCount], 0, dataArray[portionCount].Length);
+                            portionCount++;
+                        }
+                    }
+                }
+                outFile.Close();
+                inFile.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR:" + ex.Message);
+            }
+        }
+
+        public static void DecompressBlock(object i)
+        {
+            using (MemoryStream input = new MemoryStream(compressedDataArray[(int)i]))
+            {
+
+                using (GZipStream ds = new GZipStream(input, CompressionMode.Decompress))
+                {
+                    ds.Read(dataArray[(int)i], 0, dataArray[(int)i].Length);
+                }
+            }
+        }
+    }
+
+
 }
