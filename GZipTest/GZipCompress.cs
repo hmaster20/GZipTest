@@ -79,7 +79,10 @@ namespace GZipTest
             {
                 //if (tPool[portionCount].ThreadState == ThreadState.Stopped)
                 tPool[N].Join();   // ожидание потока и работа с блоком
-                BitConverter.GetBytes(dataSourceZip[N].Length + 1).CopyTo(dataSourceZip[N], 4);
+                //BitConverter.GetBytes(dataSource[N].Length + 1)
+                //            .CopyTo(dataSourceZip[N], 4);
+                BitConverter.GetBytes(dataSourceZip[N].Length + 1)//получаем размер блока в байтах
+                            .CopyTo(dataSourceZip[N], 4);//запись информации о размере
                 FileZip.Write(dataSourceZip[N], 0, dataSourceZip[N].Length);
                 N++;
             }

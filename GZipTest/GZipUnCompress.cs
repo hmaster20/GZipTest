@@ -12,51 +12,57 @@ namespace GZipTest
     {
         public void Decompress(string FileZip)
         {
-            try
+            //try
+            //{
+            using (FileStream Zip = new FileStream(FileZip, FileMode.Open))
+            using (FileStream outFile = new FileStream(FileZip.Remove(FileZip.Length - 3), FileMode.Append))// убирает расширение .gz и открывает на запись
             {
-                using (FileStream Zip = new FileStream(FileZip, FileMode.Open))
-                using (FileStream outFile = new FileStream(FileZip.Remove(FileZip.Length - 3), FileMode.Append))// убирает расширение .gz и открывает на запись
+                //int dataPortionSize;
+                int dataPortionSize = (int)Math.Pow(2, 20);
+                int compressedBlockLength;
+
+
+                Thread[] tPool;
+                Console.Write("Decompressing...");
+                byte[] buffer = new byte[8];
+                // Zip.Read(buffer, (int)(Zip.Length - 8), (int)(Zip.Length));
+
+                while (Zip.Position < Zip.Length)
                 {
-                    //int dataPortionSize;
-                    int dataPortionSize = (int)Math.Pow(2, 20);
-                    int compressedBlockLength;
-                    Thread[] tPool;
-                    Console.Write("Decompressing...");
-                    byte[] buffer = new byte[8];
-
-
-                    while (Zip.Position < Zip.Length)
+                    tPool = new Thread[threadNumber];
+                    for (int portionCount = 0; (portionCount < threadNumber) && (Zip.Position < Zip.Length); portionCount++)
                     {
-                        tPool = new Thread[threadNumber];
-                        for (int portionCount = 0; (portionCount < threadNumber) && (Zip.Position < Zip.Length); portionCount++)
-                        {
-                            Zip.Read(buffer, 0, 8);//Чтение 8 байт в буфер
-                            compressedBlockLength = BitConverter.ToInt32(buffer, 4);
-                            dataSourceZip[portionCount] = new byte[compressedBlockLength + 1];
-                            buffer.CopyTo(dataSourceZip[portionCount], 0);
+                        Zip.Read(buffer, 0, 8);//Чтение 8 байт в буфер (4 байта CRC32, 4 байта ISIZE)
+                        compressedBlockLength = BitConverter.ToInt32(buffer, 4);//вычисляем размер блока   
 
-                            Zip.Read(dataSourceZip[portionCount], 8, compressedBlockLength - 8);
-                            dataPortionSize = BitConverter.ToInt32(dataSourceZip[portionCount], compressedBlockLength - 4);
-                            dataSource[portionCount] = new byte[dataPortionSize];
 
-                            tPool[portionCount] = new Thread(DecompressBlock);
-                            tPool[portionCount].Name = "Tr_" + portionCount;
-                            tPool[portionCount].Start(portionCount);
-                        }
-                        for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);) // выяснить работу последнего блока
-                        {
-                            //if (tPool[portionCount].ThreadState == ThreadState.Stopped)
-                            tPool[portionCount].Join();
-                            outFile.Write(dataSource[portionCount], 0, dataSource[portionCount].Length);
-                            portionCount++;
-                        }
+                        dataSourceZip[portionCount] = new byte[compressedBlockLength - 1];
+                        buffer.CopyTo(dataSourceZip[portionCount], 0);
+                        //Zip.Position = 0;
+                        //Zip.Read(dataSourceZip[portionCount], 8, compressedBlockLength - 8);
+                        Zip.Read(dataSourceZip[portionCount], 8, dataSourceZip[portionCount].Length - 8);
+                        //dataPortionSize = BitConverter.ToInt32(dataSourceZip[portionCount], compressedBlockLength - 4);
+                        dataPortionSize = BitConverter.ToInt32(dataSourceZip[portionCount], dataSourceZip[portionCount].Length - 4);
+                        dataSource[portionCount] = new byte[dataPortionSize];
+
+                        tPool[portionCount] = new Thread(DecompressBlock);
+                        tPool[portionCount].Name = "Tr_" + portionCount;
+                        tPool[portionCount].Start(portionCount);
+                    }
+                    for (int portionCount = 0; (portionCount < threadNumber) && (tPool[portionCount] != null);) // выяснить работу последнего блока
+                    {
+                        //if (tPool[portionCount].ThreadState == ThreadState.Stopped)
+                        tPool[portionCount].Join();
+                        outFile.Write(dataSource[portionCount], 0, dataSource[portionCount].Length);
+                        portionCount++;
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("ERROR:" + ex.Message);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine("ERROR:" + ex.Message);
+            //}
         }
 
         public void DecompressBlock(object i)
@@ -178,29 +184,17 @@ namespace GZipTest
                     else
                         ZipBlock = defaultPartition;
 
-                    dataArraySZip[N] = new byte[ZipBlock];                    
+
+                    dataArraySZip[N] = new byte[ZipBlock];
                     ZipFile.Read(dataArraySZip[N], 0, ZipBlock);// размер буфера ZipBlock (1048576)
-                    dataArrayS[N] = new byte[ZipBlock];
+                    //dataArrayS[N] = new byte[ZipBlock];
 
                     tPool[N] = new Thread(DecompressBlockMod2);
                     tPool[N].Name = "Tr_" + N;
                     tPool[N].Start(N);
 
 
-                    //========================================================================================================
-                    //            read[j] = inFile.Read(buffer, 0, BufferSize);
-                    //            inGZip.Write(buffer, 0, read[j]);
-                    //using (GZipStream strmUncompress = new GZipStream(ZipFile, CompressionMode.Decompress))
-                    //{
-                    //    int numRead = strmUncompress.Read(buffer, 0, buffer.Length);
-                    //    while (numRead != 0)
-                    //    {
-                    //        File.Write(buffer, 0, numRead);
-                    //        File.Flush();
-                    //        numRead = strmUncompress.Read(buffer, 0, buffer.Length);
-                    //    }
-                    //    strmUncompress.Close();     // завершение работы GZipStream strmUncompress 
-                    //}
+
 
                     //inFile.Read(buffer, 0, 8);
                     //compressedBlockLength = BitConverter.ToInt32(buffer, 4);
@@ -230,16 +224,20 @@ namespace GZipTest
 
         public static void DecompressBlockMod2(object i)
         {
+            //byte[] buffer = new byte[1024 * 1024];
             using (MemoryStream input = new MemoryStream(dataArraySZip[(int)i]))
             {
                 using (GZipStream ds = new GZipStream(input, CompressionMode.Decompress))
                 {
-                   ds.Read(dataArrayS[(int)i], 0, dataArrayS[(int)i].Length); // данные считываются из потока                    
-                    //ds.Close();
+                    //int read = ds.Read(buffer, 0, buffer.Length); // данные считываются из потока   
+                    //if (read > 0)
+                    //{
+                    //    dataArrayS[(int)i] = new byte[read];
+                    //    Array.Copy(buffer, dataArrayS[(int)i], read);
+                    //}
+                    ds.Read(dataArrayS[(int)i], 0, dataArrayS[(int)i].Length);
                 }
-               // input.Close();
             }
-
 
             //ms.Position = 0;
             //GZipStream zipStream = new GZipStream(ms, CompressionMode.Decompress);
@@ -248,6 +246,21 @@ namespace GZipTest
             //// Use the ReadAllBytesFromStream to read the stream.
             //int totalCount = GZipTest.ReadAllBytesFromStream(zipStream, decompressedBuffer);
             //Console.WriteLine("Decompressed {0} bytes", totalCount);
+
+            //========================================================================================================
+            //            read[j] = inFile.Read(buffer, 0, BufferSize);
+            //            inGZip.Write(buffer, 0, read[j]);
+            //using (GZipStream strmUncompress = new GZipStream(ZipFile, CompressionMode.Decompress))
+            //{
+            //    int numRead = strmUncompress.Read(buffer, 0, buffer.Length);
+            //    while (numRead != 0)
+            //    {
+            //        File.Write(buffer, 0, numRead);
+            //        File.Flush();
+            //        numRead = strmUncompress.Read(buffer, 0, buffer.Length);
+            //    }
+            //    strmUncompress.Close();     // завершение работы GZipStream strmUncompress 
+            //}
         }
 
 

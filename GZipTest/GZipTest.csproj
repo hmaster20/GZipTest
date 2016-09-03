@@ -47,6 +47,7 @@
     <Compile Include="Other\gzip1_2.cs" />
     <Compile Include="Other\gzip52.cs" />
     <Compile Include="Other\gzip53.cs" />
+    <Compile Include="Other\MegaZipUnzip.cs" />
     <Compile Include="Other\no_gzip42_pl.cs" />
     <Compile Include="Other\no_gzip2_fs.cs" />
     <Compile Include="Other\no_gzip41_pool.cs" />
