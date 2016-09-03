@@ -201,9 +201,9 @@ namespace ZipUnzipExampleNEW
                 {
                     using (streamDestination = File.OpenWrite(destinationFile))
                     {
-                        // read 1MB chunks and compress them
+                        // read 1MB chunks and compress them = прочитать 1 MB кусок и сжать его
                         long fileLength = streamSource.Length;
-                        // write out the fileLength size
+                        // write out the fileLength size = записать размер длинны файла
                         byte[] size = BitConverter.GetBytes(fileLength);
                         streamDestination.Write(size, 0, size.Length);
                         long chunkSize = 1048576; // 1MB

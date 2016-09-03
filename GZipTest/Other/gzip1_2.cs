@@ -138,7 +138,7 @@ namespace GZipTest
                     for (int portionCount = 0; (portionCount < threadNumber) && (inFile.Position < inFile.Length); portionCount++)
                     {
                         inFile.Read(buffer, 0, 8);  //чтение 8 байт и запись в buffer
-                        compressedBlockLength = BitConverter.ToInt32(buffer, 4);    // возваращает число на основе 4 байт начиная с позиции 4
+                        compressedBlockLength = BitConverter.ToInt32(buffer, 4);    // возвращает число на основе 4 байт начиная с позиции 4
                         compressedDataArray[portionCount] = new byte[compressedBlockLength + 1];//создаем массив размером 
                         buffer.CopyTo(compressedDataArray[portionCount], 0);
 
