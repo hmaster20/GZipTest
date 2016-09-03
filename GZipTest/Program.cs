@@ -15,13 +15,15 @@ namespace GZipTest
             //zip("test6.pdf", "test6.pdf.gz");
             //zip("test222__.pdf", "test222___v2.pdf.gz");
             //zip("test5.pdf", "test5_v2.pdf.gz");
+            //zip("der.avi", "der_v2.avi.gz");
 
             //zip("test222.pdf", "test222.pdf.gz");
             //zip("test3.avhdx", "test3.avhdx.gz");
             //code =  zip("zip_unzip.pdf", "zip_unzip.pdf.gz");
             //unzip("test66.pdf.gz");
             //unzip("test222___v2.pdf.gz");
-            unzip("test5_v2.pdf.gz");
+            //unzip("test5_v2.pdf.gz");
+            unzip("der_v2.avi.gz");
 
             //unzip("test_1.txt.gz");
 
