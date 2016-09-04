@@ -15,7 +15,7 @@ namespace GZipTest
                 using (FileStream FileZip = new FileStream(FileOut, FileMode.Append))
                 {
                     Thread[] tPool;
-                    Console.Write("Сжатие...");
+                    Console.WriteLine("Сжатие...");
                     while (File.Position < File.Length)
                     {
                         tPool = new Thread[threadNumber];
@@ -79,8 +79,6 @@ namespace GZipTest
             {
                 //if (tPool[portionCount].ThreadState == ThreadState.Stopped)
                 tPool[N].Join();   // ожидание потока и работа с блоком
-                //BitConverter.GetBytes(dataSource[N].Length + 1)
-                //            .CopyTo(dataSourceZip[N], 4);
                 BitConverter.GetBytes(dataSourceZip[N].Length + 1)//получаем размер блока в байтах
                             .CopyTo(dataSourceZip[N], 4);//запись информации о размере
                 FileZip.Write(dataSourceZip[N], 0, dataSourceZip[N].Length);
