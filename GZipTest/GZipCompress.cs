@@ -9,6 +9,7 @@ namespace GZipTest
     {
         public int Compress(string FileIn, string FileOut)
         {
+            if (FileExist(FileOut)) return 1;
             try
             {
                 using (FileStream File = new FileStream(FileIn, FileMode.Open))
@@ -30,6 +31,7 @@ namespace GZipTest
                 Console.WriteLine("ERROR:" + ex.Message);
                 IsStop = true;
             }
+            if (IsStop && File.Exists(FileOut)) File.Delete(FileOut);
             return IsStop ? 1 : 0;
         }
 
@@ -78,9 +80,9 @@ namespace GZipTest
             for (int N = 0; (N < threadNumber) && (tPool[N] != null);)
             {
                 //if (tPool[portionCount].ThreadState == ThreadState.Stopped)
-                tPool[N].Join();   // ожидание потока и работа с блоком
-                BitConverter.GetBytes(dataSourceZip[N].Length + 1)//получаем размер блока в байтах
-                            .CopyTo(dataSourceZip[N], 4);//запись информации о размере
+                tPool[N].Join();                                    // ожидание потока и работа с блоком
+                BitConverter.GetBytes(dataSourceZip[N].Length + 1)  //получаем размер блока в байтах
+                            .CopyTo(dataSourceZip[N], 4);           //запись информации о размере
                 FileZip.Write(dataSourceZip[N], 0, dataSourceZip[N].Length);
                 N++;
             }

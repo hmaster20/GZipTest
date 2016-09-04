@@ -1,7 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
 
 namespace GZipTest
 {
@@ -10,41 +7,34 @@ namespace GZipTest
         static int code;// = 0;
         public static void Main(string[] args)
         {
-            //zip("der.avi", "der_v2.avi.gz");
-            //unzip("der_v2.avi.gz");
-
             if (args.Length == 3)
             {
                 switch (args[0])
                 {
-                    case "compress": zip(args[1], args[2]); break;
-                    case "decompress": unzip(args[1], args[2]); break;
+                    case "compress": code = zip(args[1], args[2]); break;
+                    case "decompress": code = unzip(args[1], args[2]); break;
                     default: help(); break;
                 }
             }
-            else if (args.Length == 0 || args.Length > 3) help(); code = 1;
-
+            else if (args.Length == 0 || args.Length > 3)
+            {
+                help(); code = 1;
+            }
             Console.WriteLine("Result code: " + code);
-            //Console.ReadLine();
-
             // GC.Collect();
             Environment.Exit(code);
         }
 
-
-        private static int zip(string file, string FileZip)
+        private static int zip(string FileIn, string FileOut)
         {
             GZipCompress zip = new GZipCompress();
-             return zip.Compress(file, FileZip);
-            //zip = null;
+            return zip.Compress(FileIn, FileOut);
         }
 
-        private static void unzip(string FileZip, string FileOut)
+        private static int unzip(string FileIn, string FileOut)
         {
             GZipUnCompress unzip = new GZipUnCompress();
-            unzip.Decompress(FileZip, FileOut);
-            //// code = unzip.Decompress(file);
-            ////unzip = null;            
+            return unzip.Decompress(FileIn, FileOut);
         }
 
         private static void help()

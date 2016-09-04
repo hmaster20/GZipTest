@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
 
 namespace GZipTest
 {
@@ -24,8 +22,7 @@ namespace GZipTest
             get { return isStop; }
             set { isStop = value; }
         }
-
-
+        
         public GZip()
         {
             threadNumber = Environment.ProcessorCount;
@@ -39,6 +36,23 @@ namespace GZipTest
             IsStop = true;
             args.Cancel = true;
             Console.WriteLine("Операция прервана пользователем!");
+        }
+
+        public static bool FileExist(string FileOut)
+        {
+            if (File.Exists(FileOut))
+            {
+                Console.WriteLine("Файл \"" + FileOut + "\" уже существует, укажите другое имя!");
+                return true;
+            }
+            return false;
+        }
+
+        //проверка завершения выполнения главного метода
+        public int CheckResult(string FileOut)
+        {
+            if (IsStop && File.Exists(FileOut)) File.Delete(FileOut);//если выявлен сбой или ручная остановка то удаляем кривой файл
+            return IsStop ? 1 : 0;
         }
     }
 }
