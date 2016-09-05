@@ -10,7 +10,7 @@ namespace GZipTest
         static int code;
         public static void Main(string[] args)
         {
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(GZip.Handler);//срабатывает при нажатии Ctrl+C
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(GZip.Handler);
 
             if (args.Length == 3)
             {
