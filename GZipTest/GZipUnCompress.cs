@@ -20,7 +20,7 @@ namespace GZipTest
                     while (Zip.Position < Zip.Length)
                     {
                         tPool = new Thread[threadNumber];
-                        ReadToThread(Zip, tPool);
+                        ReadInThread(Zip, tPool);
                         CreateUnzipFile(outFile, tPool);
                         if (IsStop) break;
                     }
@@ -37,7 +37,7 @@ namespace GZipTest
 
 
         //чтение блоков файла
-        private void ReadToThread(FileStream Zip, Thread[] tPool)
+        private void ReadInThread(FileStream Zip, Thread[] tPool)
         {
             for (int N = 0; (N < threadNumber) && (Zip.Position < Zip.Length); N++)
             {

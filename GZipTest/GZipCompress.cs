@@ -20,7 +20,7 @@ namespace GZipTest
                     while (File.Position < File.Length)
                     {
                         tPool = new Thread[threadNumber];
-                        ReadToThread(File, tPool);
+                        ReadInThread(File, tPool);
                         CreateZipFile(FileZip, tPool);
                         if (IsStop) break;
                     }
@@ -31,13 +31,12 @@ namespace GZipTest
                 Console.WriteLine("ERROR:" + ex.Message);
                 IsStop = true;
             }
-            if (IsStop && File.Exists(FileOut)) File.Delete(FileOut);
-            return IsStop ? 1 : 0;
+            return CheckResult(FileOut);
         }
 
 
         // чтение блоков файла
-        private void ReadToThread(FileStream File, Thread[] tPool)
+        private void ReadInThread(FileStream File, Thread[] tPool)
         {
             int FileBlock;
             for (int N = 0; (N < threadNumber) && (File.Position < File.Length); N++)
