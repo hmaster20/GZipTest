@@ -49,7 +49,7 @@ namespace GZipTest
             public static int threadNumber = Environment.ProcessorCount;
             public static byte[][] dataSource = new byte[threadNumber][];
             public static byte[][] dataSourceZip = new byte[threadNumber][];
-            public static int blockForCompress = (int)Math.Pow(2, 20);          // размер блока 2^24 равен 16.777.216 байт, 2^20 равен 1.048.576 
+            public static int blockForCompress = (int)Math.Pow(2, 20);
             public static bool isStop = false;
 
             public static void Handler(object sender, ConsoleCancelEventArgs args)
@@ -69,7 +69,6 @@ namespace GZipTest
                 return false;
             }
 
-            //проверка завершения выполнения главного метода
             public static int CheckResult(string FileOut)
             {
                 if (isStop && File.Exists(FileOut)) File.Delete(FileOut);
@@ -119,7 +118,6 @@ namespace GZipTest
 
 
             #region Упаковка файла
-            // чтение блоков файла
             private static void ReadFile(FileStream File, Thread[] tPool)
             {
                 int FileBlock;
@@ -131,7 +129,7 @@ namespace GZipTest
                         FileBlock = (int)(File.Length - File.Position);
 
                     dataSource[N] = new byte[FileBlock];
-                    File.Read(dataSource[N], 0, FileBlock); // читаем блока файла длинной FileBlock и пишем в буфер dataSource[N]
+                    File.Read(dataSource[N], 0, FileBlock);
 
                     tPool[N] = new Thread(CompressBlock);
                     tPool[N].Name = "Tr_" + N;
@@ -139,27 +137,25 @@ namespace GZipTest
                 }
             }
 
-            // сжатие блоков
             private static void CompressBlock(object i)
             {
                 using (MemoryStream output = new MemoryStream(dataSource[(int)i].Length))
                 {
                     using (GZipStream cs = new GZipStream(output, CompressionMode.Compress))
                     {
-                        cs.Write(dataSource[(int)i], 0, dataSource[(int)i].Length); // данные записываются в output
+                        cs.Write(dataSource[(int)i], 0, dataSource[(int)i].Length);
                     }
-                    dataSourceZip[(int)i] = output.ToArray();   //output переводим в массив и передаем в dataSourceZip
+                    dataSourceZip[(int)i] = output.ToArray();
                 }
             }
 
-            // запись сжатых блоков
             private static void CreateZipFile(FileStream FileZip, Thread[] tPool)
             {
                 for (int N = 0; (N < threadNumber) && (tPool[N] != null);)
                 {
-                    tPool[N].Join();                                    // ожидание потока и работа с блоком
-                    BitConverter.GetBytes(dataSourceZip[N].Length + 1)  //получаем размер блока в байтах
-                                .CopyTo(dataSourceZip[N], 4);           //запись информации о размере
+                    tPool[N].Join();                                    
+                    BitConverter.GetBytes(dataSourceZip[N].Length + 1)
+                                .CopyTo(dataSourceZip[N], 4);
                     FileZip.Write(dataSourceZip[N], 0, dataSourceZip[N].Length);
                     N++;
                 }
@@ -167,24 +163,17 @@ namespace GZipTest
             #endregion
 
             #region Распаковка файла
-
-            //чтение блоков файла
             private static void ReadZipFile(FileStream Zip, Thread[] tPool)
             {
                 for (int N = 0; (N < threadNumber) && (Zip.Position < Zip.Length); N++)
                 {
-                    byte[] buffer = new byte[8];//массив для хранения информации о размере и CRC
-
-                    Zip.Read(buffer, 0, 8);//Чтение 8 байт в буфер (4 байта CRC32, 4 байта ISIZE)
-                    int ZipBlockLength = BitConverter.ToInt32(buffer, 4);//вычисляем размер блока   
-
-                    dataSourceZip[N] = new byte[ZipBlockLength - 1];            //создание массива на основе полученного размера
-                    buffer.CopyTo(dataSourceZip[N], 0);                         //копирование 8 байт в массив
-                    Zip.Read(dataSourceZip[N], 8, dataSourceZip[N].Length - 8); //чтение потока размером в длину блока, исключая 8 прочитанных байт
-
-                    //вычисляем размер распакованного блока 
+                    byte[] buffer = new byte[8];
+                    Zip.Read(buffer, 0, 8);
+                    int ZipBlockLength = BitConverter.ToInt32(buffer, 4);   
+                    dataSourceZip[N] = new byte[ZipBlockLength - 1];
+                    buffer.CopyTo(dataSourceZip[N], 0);
+                    Zip.Read(dataSourceZip[N], 8, dataSourceZip[N].Length - 8);
                     int dataPortionSize = BitConverter.ToInt32(dataSourceZip[N], dataSourceZip[N].Length - 4);
-                    //создаем массив для распакованного блока
                     dataSource[N] = new byte[dataPortionSize];
 
                     tPool[N] = new Thread(DecompressBlock);
@@ -193,8 +182,6 @@ namespace GZipTest
                 }
             }
 
-
-            //распаковка
             public static void DecompressBlock(object i)
             {
                 using (MemoryStream input = new MemoryStream(dataSourceZip[(int)i]))
@@ -211,13 +198,11 @@ namespace GZipTest
                 }
             }
 
-
-            //запись распакованных данных
             private static void CreateUnzipFile(FileStream outFile, Thread[] tPool)
             {
                 for (int N = 0; (N < threadNumber) && (tPool[N] != null);)
                 {
-                    tPool[N].Join();//ожидание остановки потока
+                    tPool[N].Join();
                     outFile.Write(dataSource[N], 0, dataSource[N].Length);
                     N++;
                 }
