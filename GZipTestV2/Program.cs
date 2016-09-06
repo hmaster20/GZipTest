@@ -41,8 +41,7 @@ namespace GZipTest
             Console.WriteLine("Распаковка:\tGZipTest decompress document.gz document.doc\t (распаковка архива document.doc.gz)");
         }
 
-        public enum CompressMethod
-        { zip, unzip }
+        public enum CompressMethod { zip, unzip }
 
         public static class GZip
         {
@@ -56,7 +55,9 @@ namespace GZipTest
             {
                 isStop = true;
                 args.Cancel = true;
-                Console.WriteLine("Операция прервана пользователем!");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\nОперация прервана пользователем!");
+                Console.ForegroundColor = ConsoleColor.Gray;
             }
 
             public static bool FileExist(string FileOut)
@@ -76,6 +77,42 @@ namespace GZipTest
                 return isStop ? 1 : 0;
             }
 
+            private static void drawTextProgressBar(long progress, long total)
+            {
+                //нарисовать пустой индикатор
+                Console.CursorLeft = 0;
+                Console.Write("["); //start
+                Console.CursorLeft = 32;
+                Console.Write("]"); //end
+                Console.CursorLeft = 1;
+                float onechunk = 30.0f / total;
+
+                int percent = (int)(Math.Round(((double)progress / (double)total * 100), 1));
+
+                //нарисовать заполненную часть
+                int position = 1;
+                for (int i = 0; i <= Math.Round((onechunk * progress), MidpointRounding.ToEven); i++)
+                {
+                    Console.BackgroundColor = ConsoleColor.Gray;
+                    Console.CursorLeft = position++;
+                    Console.Write(" ");
+                }
+
+                //нарисовать незаполненную часть
+                for (int i = position; i <= 31; i++)
+                {
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.CursorLeft = position++;
+                    Console.Write("#");
+                }
+
+                //рисовать итоги
+                Console.CursorLeft = 35;
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.Write("Обработано байт {0} из {1}, {2}%    ",
+                                progress.ToString(), total.ToString(), percent);
+            }
+
             public static int FileProcessing(string FileInput, string FileOutput, CompressMethod CompressMethod)
             {
                 if (FileExist(FileOutput)) return 1;
@@ -87,9 +124,10 @@ namespace GZipTest
                         Thread[] tPool;
                         if (CompressMethod == CompressMethod.zip)
                         {
-                            Console.WriteLine("Сжатие...");
+                            Console.WriteLine("Сжатие... ");
                             while (FileIn.Position < FileIn.Length)
                             {
+                                drawTextProgressBar(FileIn.Position, FileIn.Length);
                                 tPool = new Thread[threadNumber];
                                 ReadFile(FileIn, tPool);
                                 CreateZipFile(FileOut, tPool);
@@ -98,15 +136,17 @@ namespace GZipTest
                         }
                         else if (CompressMethod == CompressMethod.unzip)
                         {
-                            Console.WriteLine("Распаковка...");
+                            Console.WriteLine("Распаковка... ");
                             while (FileIn.Position < FileIn.Length)
                             {
+                                drawTextProgressBar(FileIn.Position, FileIn.Length);
                                 tPool = new Thread[threadNumber];
                                 ReadZipFile(FileIn, tPool);
                                 CreateUnzipFile(FileOut, tPool);
                                 if (isStop) break;
                             }
                         }
+                        if (!isStop) drawTextProgressBar(FileIn.Length, FileIn.Length);
                     }
                 }
                 catch (Exception e)
