@@ -73,7 +73,7 @@ namespace GZipTest
             //проверка завершения выполнения главного метода
             public static int CheckResult(string FileOut)
             {
-                if (isStop && File.Exists(FileOut)) File.Delete(FileOut);
+                if (isStop && File.Exists(FileOut)) File.Delete(FileOut);                
                 return isStop ? 1 : 0;
             }
 
@@ -115,6 +115,8 @@ namespace GZipTest
 
             public static int FileProcessing(string FileInput, string FileOutput, CompressMethod CompressMethod)
             {
+                var before = DateTime.Now;
+
                 if (FileExist(FileOutput)) return 1;
                 try
                 {
@@ -154,6 +156,8 @@ namespace GZipTest
                     Console.WriteLine("Ошибка: " + e.Message);
                     isStop = true;
                 }
+                var spendTime = DateTime.Now - before;
+                Console.WriteLine("\nВремя выполнения " + Math.Round(spendTime.TotalSeconds,1) + " секунд(-ы)");
                 return CheckResult(FileOutput);
             }
 
