@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
@@ -115,6 +116,8 @@ namespace GZipTest
 
             public static int FileProcessing(string FileInput, string FileOutput, CompressMethod CompressMethod)
             {
+                //Stopwatch sw = new Stopwatch();
+                //sw.Start();
                 var before = DateTime.Now;
 
                 if (FileExist(FileOutput)) return 1;
@@ -156,8 +159,24 @@ namespace GZipTest
                     Console.WriteLine("Ошибка: " + e.Message);
                     isStop = true;
                 }
+
                 var spendTime = DateTime.Now - before;
-                Console.WriteLine("\nВремя выполнения " + Math.Round(spendTime.TotalSeconds,1) + " секунд(-ы)");
+                //sw.Stop();
+                //TimeSpan ts = sw.Elapsed;
+                //Console.WriteLine("\nТаймер засек: " + ts.TotalSeconds.ToString());
+                //Console.WriteLine("\n{0:00} час. {1:D2} мин. {2:D2}.{3:00} сек.",
+                //                    ts.TotalHours, ts.Minutes, ts.Seconds, ts.TotalMilliseconds);
+                //sw.Reset();
+                double timepassed = Math.Round(spendTime.TotalSeconds, 1);
+                if (timepassed > 59)
+                {
+                    Console.WriteLine("\nВремя выполнения {0} мин. {1} сек.", ((int)timepassed / 60), ((int)timepassed % 60));
+                }
+                else
+                {
+                    Console.WriteLine("\nВремя выполнения {0} мин. {1} сек.", ((int)timepassed / 60), ((int)timepassed % 60));
+                }
+                
                 return CheckResult(FileOutput);
             }
 
