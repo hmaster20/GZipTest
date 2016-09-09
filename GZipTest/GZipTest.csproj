@@ -77,10 +77,6 @@
     <Compile Include="Other\test.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Algorithm.txt" />
-    <Content Include="Other\ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1</ProductName>

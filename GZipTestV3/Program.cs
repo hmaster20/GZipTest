@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
@@ -73,7 +74,7 @@ namespace GZipTest
             //проверка завершения выполнения главного метода
             public static int CheckResult(string FileOut)
             {
-                if (isStop && File.Exists(FileOut)) File.Delete(FileOut);                
+                if (isStop && File.Exists(FileOut)) File.Delete(FileOut);
                 return isStop ? 1 : 0;
             }
 
@@ -113,6 +114,7 @@ namespace GZipTest
                                 progress.ToString(), total.ToString(), percent);
             }
 
+
             public static int FileProcessing(string FileInput, string FileOutput, CompressMethod CompressMethod)
             {
                 //Stopwatch sw = new Stopwatch();
@@ -122,35 +124,51 @@ namespace GZipTest
                 if (FileExist(FileOutput)) return 1;
                 try
                 {
-                    using (FileStream FileIn = new FileStream(FileInput, FileMode.Open))
-                    using (FileStream FileOut = new FileStream(FileOutput, FileMode.Append))
+                    //int FileBuffer = threadNumber * 4096;
+                    int FileBuffer = threadNumber * blockForCompress;
+                    //using (FileStream FileIn = new FileStream(FileInput, FileMode.Open))
+                    //using (FileStream FileIn = new FileStream(FileInput, FileMode.Open, FileAccess.Read, FileShare.Read, FileBuffer, FileOptions.Asynchronous))
+                    using (FileStream FileIn = new FileStream(FileInput, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous))
+                    using (BufferedStream BufferedFileIn = new BufferedStream(FileIn, 64*1024))
                     {
-                        Thread[] tPool;
-                        if (CompressMethod == CompressMethod.zip)
+                        using (FileStream FileOut = new FileStream(FileOutput, FileMode.Append))
                         {
-                            Console.WriteLine("Сжатие... ");
-                            while (FileIn.Position < FileIn.Length)
+                            Thread[] tPool;
+                            if (CompressMethod == CompressMethod.zip)
                             {
-                                drawTextProgressBar(FileIn.Position, FileIn.Length);
-                                tPool = new Thread[threadNumber];
-                                ReadFile(FileIn, tPool);
-                                CreateZipFile(FileOut, tPool);
-                                if (isStop) break;
+                                Console.WriteLine("Сжатие... ");
+                                //while (FileIn.Position < FileIn.Length)
+                                //{
+                                //    drawTextProgressBar(FileIn.Position, FileIn.Length);
+                                //    tPool = new Thread[threadNumber];
+                                //    ReadFile(FileIn, tPool);
+                                //    CreateZipFile(FileOut, tPool);
+                                //    if (isStop) break;
+                                //}
+
+                                while (BufferedFileIn.Position < BufferedFileIn.Length)
+                                {
+                                    drawTextProgressBar(BufferedFileIn.Position, BufferedFileIn.Length);
+                                    tPool = new Thread[threadNumber];
+                                    ReadBuffer(BufferedFileIn, tPool);
+                                    CreateZipFile(FileOut, tPool);
+                                    if (isStop) break;
+                                }
                             }
-                        }
-                        else if (CompressMethod == CompressMethod.unzip)
-                        {
-                            Console.WriteLine("Распаковка... ");
-                            while (FileIn.Position < FileIn.Length)
+                            else if (CompressMethod == CompressMethod.unzip)
                             {
-                                drawTextProgressBar(FileIn.Position, FileIn.Length);
-                                tPool = new Thread[threadNumber];
-                                ReadZipFile(FileIn, tPool);
-                                CreateUnzipFile(FileOut, tPool);
-                                if (isStop) break;
+                                Console.WriteLine("Распаковка... ");
+                                while (FileIn.Position < FileIn.Length)
+                                {
+                                    drawTextProgressBar(FileIn.Position, FileIn.Length);
+                                    tPool = new Thread[threadNumber];
+                                    ReadZipFile(FileIn, tPool);
+                                    CreateUnzipFile(FileOut, tPool);
+                                    if (isStop) break;
+                                }
                             }
+                            if (!isStop) drawTextProgressBar(FileIn.Length, FileIn.Length);
                         }
-                        if (!isStop) drawTextProgressBar(FileIn.Length, FileIn.Length);
                     }
                 }
                 catch (Exception e)
@@ -159,14 +177,8 @@ namespace GZipTest
                     isStop = true;
                 }
 
-                var spendTime = DateTime.Now - before;
-                //sw.Stop();
-                //TimeSpan ts = sw.Elapsed;
-                //Console.WriteLine("\nТаймер засек: " + ts.TotalSeconds.ToString());
-                //Console.WriteLine("\n{0:00} час. {1:D2} мин. {2:D2}.{3:00} сек.",
-                //                    ts.TotalHours, ts.Minutes, ts.Seconds, ts.TotalMilliseconds);
-                //sw.Reset();
-                double timepassed = Math.Round(spendTime.TotalSeconds, 1);
+                // var spendTime = DateTime.Now - before;
+                double timepassed = Math.Round((DateTime.Now - before).TotalSeconds, 1);
                 if (timepassed > 59)
                 {
                     Console.WriteLine("\nВремя выполнения {0} мин. {1} сек.", ((int)timepassed / 60), ((int)timepassed % 60));
@@ -175,10 +187,30 @@ namespace GZipTest
                 {
                     Console.WriteLine("\nВремя выполнения {0} мин. {1} сек.", ((int)timepassed / 60), ((int)timepassed % 60));
                 }
-                
+
                 return CheckResult(FileOutput);
             }
 
+
+
+            private static void ReadBuffer(BufferedStream Buff, Thread[] tPool)
+            {
+                int FileBlock;
+                for (int N = 0; (N < threadNumber) && (Buff.Position < Buff.Length); N++)
+                {
+                    if (Buff.Length - Buff.Position >= blockForCompress)
+                        FileBlock = blockForCompress;
+                    else
+                        FileBlock = (int)(Buff.Length - Buff.Position);
+
+                    dataSource[N] = new byte[FileBlock];
+                    Buff.Read(dataSource[N], 0, FileBlock); // читаем блока файла длинной FileBlock и пишем в буфер dataSource[N] || int i = File.Read, i сколько прочитали
+
+                    tPool[N] = new Thread(CompressBlock);
+                    tPool[N].Name = "Tr_" + N;
+                    tPool[N].Start(N);
+                }
+            }
 
             #region Упаковка файла
             // чтение блоков файла
@@ -193,7 +225,7 @@ namespace GZipTest
                         FileBlock = (int)(File.Length - File.Position);
 
                     dataSource[N] = new byte[FileBlock];
-                    File.Read(dataSource[N], 0, FileBlock); // читаем блока файла длинной FileBlock и пишем в буфер dataSource[N]
+                    File.Read(dataSource[N], 0, FileBlock); // читаем блока файла длинной FileBlock и пишем в буфер dataSource[N] || int i = File.Read, i сколько прочитали
 
                     tPool[N] = new Thread(CompressBlock);
                     tPool[N].Name = "Tr_" + N;
@@ -285,6 +317,115 @@ namespace GZipTest
                 }
             }
             #endregion
+
+
+
+            //This sounds like a fairly common requirement which can be solved by a multi-threaded producer-consumer queue.
+            //The threads are kept 'alive' and are signaled to do work when new work is added to the queue.
+            //The work is represented by a delegate (in your case ComputePartialDataOnThread) and the data passed to the delegate is what is queued 
+            //(in your case the params to ComputePartialDataOnThread). 
+            //The useful feature is that the implementation of managing worker threads and the actual algorithms are separate.Here is the p-c queue:
+
+            //Это звучит как довольно общим требованием, которые могут быть решены с помощью многопоточной очереди на производитель-потребитель.
+            //Нити поддерживаются 'живыми' и сигнализируют, чтобы сделать работу, когда новая работа добавляется в очередь.
+            //Работа представлена делегатом(в вашем случае ComputePartialDataOnThread) и данные, 
+            //передаваемые делегату то, что находится в очереди(в вашем случае Params к ComputePartialDataOnThread). 
+            //Полезная особенность в том, что осуществление управления рабочими потоками и реальными алгоритмами отдельно.
+            //Вот очередь р-с:
+
+            //Did you use this successfully and was it faster?
+            //Yes, in its final incarnation it's a bit different and more complex that that, but the same idea. 
+            //The threads go into a low-priority mode after a few seconds of inactivity, then exit after 30 seconds of inactivity. 
+            //This is in accordance with the type and frequency of work they will expect. It runs at close to the same speed as ThreadPool, but is less jittery. 
+            //Also I found I could get better CPU caching by splitting the data up into adjacent lines as opposed to chunks, which also made a difference.
+
+            // Использовали ли вы это успешно и был это быстрее?
+            // Да, в своем последнем воплощении это немного отличается и более сложным, что это, но та же идея.
+            // Потоки переходит в режим низкого приоритета через несколько секунд бездействия, а затем выйти через 30 секунд бездействия.
+            // Это в соответствии с типом и частотой работы, которую они будут ожидать. Он работает на частоте, близкой к той же скоростью, как ThreadPool, 
+            // но менее поволноваться.
+            // Кроме того, я обнаружил, что я мог бы получить лучшее кэширование процессора путем разделения данных вверх на соседние линии, в отличие от кусков, 
+            // которые также сделали разницу.
+
+
+
+
+            public class SuperQueue<T> : IDisposable where T : class
+            {
+                readonly object _locker = new object();
+                readonly List<Thread> _workers;
+                readonly Queue<T> _taskQueue = new Queue<T>();
+                readonly Action<T> _dequeueAction;
+
+                /// <summary>
+                /// Initializes a new instance of the <see cref="SuperQueue{T}"/> class.
+                /// </summary>
+                /// <param name="workerCount">The worker count.</param>
+                /// <param name="dequeueAction">The dequeue action.</param>
+                public SuperQueue(int workerCount, Action<T> dequeueAction)
+                {
+                    _dequeueAction = dequeueAction;
+                    _workers = new List<Thread>(workerCount);
+
+                    // Create and start a separate thread for each worker
+                    // Создать и запустить отдельный поток для каждого работника
+                    for (int i = 0; i < workerCount; i++)
+                    {
+                        Thread t = new Thread(Consume) { IsBackground = true, Name = string.Format("SuperQueue worker {0}", i) };
+                        _workers.Add(t);
+                        t.Start();
+                    }
+                }
+
+                /// <summary>
+                /// Enqueues the task. 
+                /// Ставит в очередь задачу.
+                /// </summary>
+                /// <param name="task">The task.</param>
+                public void EnqueueTask(T task)
+                {
+                    lock (_locker)
+                    {
+                        _taskQueue.Enqueue(task);
+                        Monitor.PulseAll(_locker);
+                    }
+                }
+
+                /// <summary>
+                /// Consumes this instance.
+                /// </summary>
+                void Consume()
+                {
+                    while (true)
+                    {
+                        T item;
+                        lock (_locker)
+                        {
+                            while (_taskQueue.Count == 0) Monitor.Wait(_locker);
+                            item = _taskQueue.Dequeue();
+                        }
+                        if (item == null) return;
+
+                        // run actual method
+                        // запустить фактический метод
+                        _dequeueAction(item);
+                    }
+                }
+
+                /// <summary>
+                /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+                /// </summary>
+                public void Dispose()
+                {
+                    // Enqueue one null task per worker to make each exit.
+                    _workers.ForEach(thread => EnqueueTask(null));
+
+                    _workers.ForEach(thread => thread.Join());
+
+                }
+            }
+
+
 
         }
     }
