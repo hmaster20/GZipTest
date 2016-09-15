@@ -6,30 +6,59 @@ using System.Threading;
 
 namespace GZipTest
 {
+    class Person
+    {
+        int i;
+        private string st;
+        public string St { get;  set; }
+
+        public static void print(int _i)
+        {
+            Console.WriteLine("{0}", _i);
+        }
+    }
+
     class Program
     {
+        private static void ttt(Person obj)
+        {
+            Person n = new Person();
+            n.St = "234";
+            Console.WriteLine(obj.ToString());
+            Console.WriteLine(n.St);
+        }
+
+
         static int code;
         public static void Main(string[] args)
         {
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(GZip.Handler);//срабатывает при нажатии Ctrl+C
+            SuperQueue<Person> ggg = new SuperQueue<Person>(3, ttt);
+          
+           
 
-            if (args.Length == 3)
-            {
-                switch (args[0])
-                {
-                    case "compress": code = GZip.FileProcessing(args[1], args[2], CompressMethod.zip); break;
-                    case "decompress": code = GZip.FileProcessing(args[1], args[2], CompressMethod.unzip); break;
-                    default: help(); break;
-                }
-            }
-            else if (args.Length == 0 || args.Length > 3 || args.Length < 3)
-            {
-                Console.WriteLine("Для правильного указания параметров воспользуйтесь справкой ниже.\n");
-                help(); code = 1;
-            }
 
-            Environment.Exit(code);
+            //Console.CancelKeyPress += new ConsoleCancelEventHandler(GZip.Handler);//срабатывает при нажатии Ctrl+C
+
+            //if (args.Length == 3)
+            //{
+            //    switch (args[0])
+            //    {
+            //        case "compress": code = GZip.FileProcessing(args[1], args[2], CompressMethod.zip); break;
+            //        case "decompress": code = GZip.FileProcessing(args[1], args[2], CompressMethod.unzip); break;
+            //        default: help(); break;
+            //    }
+            //}
+            //else if (args.Length == 0 || args.Length > 3 || args.Length < 3)
+            //{
+            //    Console.WriteLine("Для правильного указания параметров воспользуйтесь справкой ниже.\n");
+            //    help(); code = 1;
+            //}
+
+            //Environment.Exit(code);
+            Console.ReadKey();
         }
+
+  
 
         private static void help()
         {
@@ -326,6 +355,8 @@ namespace GZipTest
             //(in your case the params to ComputePartialDataOnThread). 
             //The useful feature is that the implementation of managing worker threads and the actual algorithms are separate.Here is the p-c queue:
 
+            //                 tPool[N] = new Thread(CompressBlock); =   tPool[N] = new Thread(ComputePartialDataOnThread);
+
             //Это звучит как довольно общим требованием, которые могут быть решены с помощью многопоточной очереди на производитель-потребитель.
             //Нити поддерживаются 'живыми' и сигнализируют, чтобы сделать работу, когда новая работа добавляется в очередь.
             //Работа представлена делегатом(в вашем случае ComputePartialDataOnThread) и данные, 
@@ -347,86 +378,91 @@ namespace GZipTest
             // Кроме того, я обнаружил, что я мог бы получить лучшее кэширование процессора путем разделения данных вверх на соседние линии, в отличие от кусков, 
             // которые также сделали разницу.
 
+            // SuperQueue(4, метод)
 
 
+        }
 
-            public class SuperQueue<T> : IDisposable where T : class
+
+        public class SuperQueue<T> : IDisposable where T : class
+        {
+            readonly object _locker = new object();             //блокировщик
+            readonly List<Thread> _workers;                     //список потоков
+            readonly Queue<T> _taskQueue = new Queue<T>();      //очередь
+            readonly Action<T> _dequeueAction;                  //метод для работы
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SuperQueue{T}"/> class.
+            /// </summary>
+            /// <param name="workerCount">The worker count.</param>
+            /// <param name="dequeueAction">The dequeue action.</param>
+
+            public SuperQueue(int workerCount, Action<T> dequeueAction)
             {
-                readonly object _locker = new object();
-                readonly List<Thread> _workers;
-                readonly Queue<T> _taskQueue = new Queue<T>();
-                readonly Action<T> _dequeueAction;
-
-                /// <summary>
-                /// Initializes a new instance of the <see cref="SuperQueue{T}"/> class.
-                /// </summary>
-                /// <param name="workerCount">The worker count.</param>
-                /// <param name="dequeueAction">The dequeue action.</param>
-                public SuperQueue(int workerCount, Action<T> dequeueAction)
+                _dequeueAction = dequeueAction;             //метод
+                _workers = new List<Thread>(workerCount);   //создаетм список с количеством workerCount
+                // Create and start a separate thread for each worker
+                // Создать и запустить отдельный поток для каждого работника
+                for (int i = 0; i < workerCount; i++)
                 {
-                    _dequeueAction = dequeueAction;
-                    _workers = new List<Thread>(workerCount);
-
-                    // Create and start a separate thread for each worker
-                    // Создать и запустить отдельный поток для каждого работника
-                    for (int i = 0; i < workerCount; i++)
+                    Thread t = new Thread(Consume)
                     {
-                        Thread t = new Thread(Consume) { IsBackground = true, Name = string.Format("SuperQueue worker {0}", i) };
-                        _workers.Add(t);
-                        t.Start();
-                    }
-                }
-
-                /// <summary>
-                /// Enqueues the task. 
-                /// Ставит в очередь задачу.
-                /// </summary>
-                /// <param name="task">The task.</param>
-                public void EnqueueTask(T task)
-                {
-                    lock (_locker)
-                    {
-                        _taskQueue.Enqueue(task);
-                        Monitor.PulseAll(_locker);
-                    }
-                }
-
-                /// <summary>
-                /// Consumes this instance.
-                /// </summary>
-                void Consume()
-                {
-                    while (true)
-                    {
-                        T item;
-                        lock (_locker)
-                        {
-                            while (_taskQueue.Count == 0) Monitor.Wait(_locker);
-                            item = _taskQueue.Dequeue();
-                        }
-                        if (item == null) return;
-
-                        // run actual method
-                        // запустить фактический метод
-                        _dequeueAction(item);
-                    }
-                }
-
-                /// <summary>
-                /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-                /// </summary>
-                public void Dispose()
-                {
-                    // Enqueue one null task per worker to make each exit.
-                    _workers.ForEach(thread => EnqueueTask(null));
-
-                    _workers.ForEach(thread => thread.Join());
-
+                        IsBackground = true,
+                        Name = string.Format("SuperQueue worker {0}", i)
+                    };
+                    _workers.Add(t);
+                    t.Start();
+                    Console.WriteLine("{0},{1}", i, t.Name);
                 }
             }
 
+            /// <summary>
+            /// Enqueues the task. 
+            /// Ставит в очередь задачу.
+            /// </summary>
+            /// <param name="task">The task.</param>
+            public void EnqueueTask(T task)
+            {
+                lock (_locker)
+                {
+                    _taskQueue.Enqueue(task);
+                    Monitor.PulseAll(_locker);
+                }
+            }
 
+            /// <summary>
+            /// Consumes this instance.
+            /// </summary>
+            void Consume()      //некий метод
+            {
+                while (true)
+                {
+                    T item;
+                    lock (_locker)
+                    {
+                        while (_taskQueue.Count == 0) Monitor.Wait(_locker);
+                        item = _taskQueue.Dequeue();
+                    }
+                    if (item == null) return;
 
+                    // run actual method
+                    // запустить фактический метод
+                    _dequeueAction(item);
+                }
+            }
+
+            /// <summary>
+            /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            /// </summary>
+            public void Dispose()
+            {
+                // Enqueue one null task per worker to make each exit.
+                // Ставить один нуль задача на одного работника, чтобы каждый выход.
+
+                _workers.ForEach(thread => EnqueueTask(null));
+                _workers.ForEach(thread => thread.Join());
+
+            }
         }
     }
 }
